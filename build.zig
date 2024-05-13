@@ -8,7 +8,8 @@ pub fn build(b: *Builder) void {
     b.verbose_link = true;
     b.verbose = true;
 
-    const target = .{
+    // Target STM32L476RG
+    const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
         .os_tag = .freestanding,
@@ -17,6 +18,8 @@ pub fn build(b: *Builder) void {
         .abi = .eabihf,
         .glibc_version = null,
     };
+    const target = b.resolveTargetQuery(query);
+    std.debug.print("\n\nTarget:\n{}\n\n", .{target});
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
@@ -27,8 +30,9 @@ pub fn build(b: *Builder) void {
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = opti,
-        .linkage = .static, // static linking
-        .link_libc = false, // will link against newlib_nano
+        .linkage = .static,
+        .link_libc = false,
+        .strip = false,
         .single_threaded = true, // single core cpu
     });
 
@@ -58,8 +62,12 @@ pub fn build(b: *Builder) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-fdata-sections", "-ffunction-sections" };
+    const c_sources_compile_flags = [_][]const u8{ "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-fdata-sections", "-ffunction-sections", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-mthumb", "-lnosys", "--specs=nano.specs", "-Wl,--gc-sections" };
 
+    const driver_file = .{
+        .files = &c_sources_drivers,
+        .flags = &c_sources_compile_flags,
+    };
     //////////////////////////////////////////////////////////////////
     for (asm_sources) |path| {
         elf.addAssemblyFile(.{ .path = path });
@@ -68,7 +76,7 @@ pub fn build(b: *Builder) void {
         elf.addIncludePath(.{ .path = path });
     }
 
-    elf.addCSourceFiles(&c_sources_drivers, &c_sources_compile_flags);
+    elf.addCSourceFiles(driver_file);
     //////////////////////////////////////////////////////////////////
     const c_includes_core = [_][]const u8{"Core/Inc"};
     const c_sources_core = [_][]const u8{
@@ -85,28 +93,30 @@ pub fn build(b: *Builder) void {
     for (c_includes_core) |path| {
         elf.addIncludePath(.{ .path = path });
     }
-    elf.addCSourceFiles(&c_sources_core, &c_sources_compile_flags);
+    const core_file = .{
+        .files = &c_sources_core,
+        .flags = &c_sources_compile_flags,
+    };
+
+    elf.addCSourceFiles(core_file);
     //////////////////////////////////////////////////////////////////
     // make a list of targets that have include files and c source files
-    // var targets = std.ArrayList(*std.Build.CompileStep).init(b.allocator);
-    // targets.append(elf) catch @panic("OOM");
-    // zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
+    //var targets = std.ArrayList(*std.Build.CompileStep).init(b.allocator);
+    //targets.append(elf) catch @panic("OOM");
+    //zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
 
     //////////////////////////////////////////////////////////////////
     //TODO: lib c linker option -Wl,--gc-sections -specs=nano.specs  // -lnosys
     //setLibCFile better choice ?
     // const arm_none_eabi_path = "/opt/dev/xpack-arm-none-eabi-gcc-12.3.1-1.2/arm-none-eabi/";
     // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+dp/hard/libc.a" });
-
     // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+fp/hard/libnosys.a" });
     // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+fp/hard/libc_nano.a" });
     // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+fp/hard/libm.a" });
-
     // elf.addSystemIncludePath(.{ .path = arm_none_eabi_path ++ "include/" });
-    //elf.linkLibC(); //not available for embedded build
-    // Set Entry Point of the firmware (Already set in the linker script)
 
-    elf.entry_symbol_name = "Reset_Handler";
+    // Set Entry Point of the firmware (Already set in the linker script)
+    elf.entry = .{ .symbol_name = "Reset_Handler" };
     elf.want_lto = false;
 
     // Copy the elf to the output directory.
@@ -133,7 +143,6 @@ pub fn build(b: *Builder) void {
 
     //TODO: Add map option to the linker
     //TODO: Add memory view if possible
-
     // const bin_step = b.step("bin", "Generate binary file to be flashed");
     // bin_step.dependOn(&bin.step);
 
