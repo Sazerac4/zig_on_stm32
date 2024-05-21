@@ -8,6 +8,11 @@ pub fn build(b: *Builder) void {
     b.verbose_link = true;
     b.verbose = true;
 
+    //Gcc compiler definition //TODO: Pass it as argument ?
+    const arm_none_eabi_version = "12.3.1";
+    const arm_none_eabi_path = "/opt/dev/xpack-arm-none-eabi-gcc-12.3.1-1.2/";
+    const arm_none_eabi_arch = "v7e-m+fp";
+
     // Target STM32L476RG
     const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
@@ -37,7 +42,7 @@ pub fn build(b: *Builder) void {
     });
 
     elf.setLinkerScriptPath(.{ .path = "src/STM32L476RGTx_FLASH.ld" });
-    elf.setVerboseLink(true);
+    //elf.setVerboseLink(true); (NOTE: See https://github.com/ziglang/zig/issues/19410)
 
     const asm_sources = [_][]const u8{"src/startup_stm32l476xx.s"};
     const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
@@ -62,7 +67,7 @@ pub fn build(b: *Builder) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-fdata-sections", "-ffunction-sections", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-mthumb", "-lnosys", "--specs=nano.specs", "-Wl,--gc-sections" };
+    const c_sources_compile_flags = [_][]const u8{ "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-mthumb" };
 
     const driver_file = .{
         .files = &c_sources_drivers,
@@ -106,18 +111,28 @@ pub fn build(b: *Builder) void {
     //zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
 
     //////////////////////////////////////////////////////////////////
-    //TODO: lib c linker option -Wl,--gc-sections -specs=nano.specs  // -lnosys
-    //setLibCFile better choice ?
-    // const arm_none_eabi_path = "/opt/dev/xpack-arm-none-eabi-gcc-12.3.1-1.2/arm-none-eabi/";
-    // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+dp/hard/libc.a" });
-    // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+fp/hard/libnosys.a" });
-    // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+fp/hard/libc_nano.a" });
-    // elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "lib/thumb/v7e-m+fp/hard/libm.a" });
-    // elf.addSystemIncludePath(.{ .path = arm_none_eabi_path ++ "include/" });
+    // Manually including libraries bundled with arm-none-eabi-gcc
+    elf.addLibraryPath(.{ .path = arm_none_eabi_path ++ "arm-none-eabi/lib/thumb/" ++ arm_none_eabi_arch ++ "/hard" });
+    elf.addLibraryPath(.{ .path = arm_none_eabi_path ++ "lib/gcc/arm-none-eabi/" ++ arm_none_eabi_version ++ "/thumb/" ++ arm_none_eabi_arch ++ "/hard" });
+    elf.addSystemIncludePath(.{ .path = arm_none_eabi_path ++ "arm-none-eabi/include" });
+    elf.linkSystemLibrary("nosys"); // "-lnosys",
+    elf.linkSystemLibrary("c_nano"); // "-lc_nano"
+    elf.linkSystemLibrary("m"); // "-lm"
+    elf.linkSystemLibrary("gcc"); // "-lgcc"
 
-    // Set Entry Point of the firmware (Already set in the linker script)
-    elf.entry = .{ .symbol_name = "Reset_Handler" };
-    elf.want_lto = false;
+    // Manually include C runtime objects bundled with arm-none-eabi-gcc
+    elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "arm-none-eabi/lib/thumb/" ++ arm_none_eabi_arch ++ "/hard/crt0.o" });
+    elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "/lib/gcc/arm-none-eabi/" ++ arm_none_eabi_version ++ "/thumb/" ++ arm_none_eabi_arch ++ "/hard/crti.o" });
+    elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "/lib/gcc/arm-none-eabi/" ++ arm_none_eabi_version ++ "/thumb/" ++ arm_none_eabi_arch ++ "/hard/crtbegin.o" });
+    elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "/lib/gcc/arm-none-eabi/" ++ arm_none_eabi_version ++ "/thumb/" ++ arm_none_eabi_arch ++ "/hard/crtend.o" });
+    elf.addObjectFile(.{ .path = arm_none_eabi_path ++ "/lib/gcc/arm-none-eabi/" ++ arm_none_eabi_version ++ "/thumb/" ++ arm_none_eabi_arch ++ "/hard/crtn.o" });
+
+    //////////////////////////////////////////////////////////////////
+    elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
+    elf.want_lto = false; // -flto
+    elf.link_data_sections = true; // -fdata-sections
+    elf.link_function_sections = true; // -ffunction-sections
+    elf.link_gc_sections = true; // -Wl,--gc-sections
 
     // Copy the elf to the output directory.
     const copy_elf = b.addInstallArtifact(elf, .{});
@@ -143,13 +158,12 @@ pub fn build(b: *Builder) void {
 
     //TODO: Add map option to the linker
     //TODO: Add memory view if possible
-    // const bin_step = b.step("bin", "Generate binary file to be flashed");
-    // bin_step.dependOn(&bin.step);
 
     const flash_cmd = b.addSystemCommand(&[_][]const u8{
         "st-flash",
         "--reset",
         "--freq=4000k",
+        "--format=ihex",
         "write",
         "zig-out/bin/stm32l4.hex",
     });
