@@ -15,13 +15,18 @@ pub fn build(b: *Builder) void {
     const project_name = "stm32l4_test";
     const gcc_version = "13.2.1";
     const gcc_path = "/opt/dev/xpack-arm-none-eabi-gcc-13.2.1-1.1/";
-    const gcc_arch = "v7e-m+fp";
+
+    //For STM32L4 (-mfloat-abi=<select>)
+    //soft   => v7e-m/nofp
+    //softfp => v7e-m+fp/softfp
+    //hard   => v7e-m+fp/hard
+    const float_abi_opt = "v7e-m+fp/hard";
 
     // Target STM32L476RG
     const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
-        //.cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.}), //FIXME: Better way to pass arm options ?
+        //.cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.}), //FIXME: Better way to pass arm "mfpu=fpv4-sp-d16" option ?
         .os_tag = .freestanding,
         .os_version_min = undefined,
         .os_version_max = undefined,
@@ -72,7 +77,7 @@ pub fn build(b: *Builder) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-DDEBUG", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-mthumb" };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfpu=fpv4-sp-d16" };
 
     const driver_file = .{
         .files = &c_sources_drivers,
@@ -112,8 +117,8 @@ pub fn build(b: *Builder) void {
 
     //////////////////////////////////////////////////////////////////
     // Manually including libraries bundled with arm-none-eabi-gcc
-    elf.addLibraryPath(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ gcc_arch ++ "/hard" });
-    elf.addLibraryPath(.{ .path = gcc_path ++ "lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ gcc_arch ++ "/hard" });
+    elf.addLibraryPath(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ float_abi_opt });
+    elf.addLibraryPath(.{ .path = gcc_path ++ "lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt });
     elf.addSystemIncludePath(.{ .path = gcc_path ++ "arm-none-eabi/include" });
 
     //elf.linkSystemLibrary("nosys"); // "-lnosys",
@@ -126,11 +131,11 @@ pub fn build(b: *Builder) void {
     //elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
 
     // Manually include C runtime objects bundled with arm-none-eabi-gcc
-    elf.addObjectFile(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ gcc_arch ++ "/hard/crt0.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ gcc_arch ++ "/hard/crti.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ gcc_arch ++ "/hard/crtbegin.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ gcc_arch ++ "/hard/crtend.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ gcc_arch ++ "/hard/crtn.o" });
+    elf.addObjectFile(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ float_abi_opt ++ "/crt0.o" });
+    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crti.o" });
+    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtbegin.o" });
+    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtend.o" });
+    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtn.o" });
 
     //////////////////////////////////////////////////////////////////
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
