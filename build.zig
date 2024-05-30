@@ -24,7 +24,7 @@ pub fn build(b: *Builder) void {
     const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
-        //.cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.}), //FIXME: Better way to pass arm "mfpu=fpv4-sp-d16" option ?
+        .cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.fp16}), //FIXME: Better way to pass arm "mfpu=fpv4-sp-d16" option ?
         .os_tag = .freestanding,
         .os_version_min = undefined,
         .os_version_max = undefined,
@@ -102,12 +102,38 @@ pub fn build(b: *Builder) void {
     for (c_includes_core) |path| {
         elf.addIncludePath(.{ .path = path });
     }
-    const core_file = .{
+    const core_files = .{
         .files = &c_sources_core,
         .flags = &c_sources_compile_flags,
     };
 
-    elf.addCSourceFiles(core_file);
+    elf.addCSourceFiles(core_files);
+
+    //////////////////////////////////////////////////////////////////
+    // FreeRTOS source code
+    const c_includes_os = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F" };
+    const c_sources_os = [_][]const u8{
+        "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/list.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/queue.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/timers.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
+    };
+
+    for (c_includes_os) |path| {
+        elf.addIncludePath(.{ .path = path });
+    }
+    const os_files = .{
+        .files = &c_sources_os,
+        .flags = &c_sources_compile_flags,
+    };
+
+    elf.addCSourceFiles(os_files);
 
     //////////////////////////////////////////////////////////////////
     // Manually including libraries bundled with arm-none-eabi-gcc
