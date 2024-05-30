@@ -20,7 +20,6 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
-#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,7 +55,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern void main_zig(void);
+extern void zig_entrypoint(void);
 /* USER CODE END 0 */
 
 /**
@@ -82,17 +81,15 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  char value[40] =  {0};
-  size_t len = 0;
-  len += snprintf(&value[len], sizeof(value) - len, "%u%u;", 20, 50);
-  len += snprintf(&value[len], sizeof(value) - len, "%2.3f;", 23.45677);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  main_zig();
+  zig_entrypoint();
+  NVIC_SystemReset();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,7 +97,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    HAL_Delay(250);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

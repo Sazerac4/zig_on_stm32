@@ -7,20 +7,18 @@ const Builder = std.Build;
 //TODO: Add memory view if possible (-Wl,--print-memory-usage)
 
 pub fn build(b: *Builder) void {
-    b.verbose_cc = false;
-    b.verbose_link = true;
-    b.verbose = true;
 
     //Gcc compiler definition //TODO: Pass it as argument ?
+    //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
     const project_name = "stm32l4_test";
+
+    //GCC
     const gcc_version = "13.2.1";
     const gcc_path = "/opt/dev/xpack-arm-none-eabi-gcc-13.2.1-1.1/";
-
-    //For STM32L4 (-mfloat-abi=<select>)
     //soft   => v7e-m/nofp
     //softfp => v7e-m+fp/softfp
     //hard   => v7e-m+fp/hard
-    const float_abi_opt = "v7e-m+fp/hard";
+    const float_abi_opt = "v7e-m+fp/hard"; //(-mfloat-abi=<select>)
 
     // Target STM32L476RG
     const query: std.zig.CrossTarget = .{
@@ -34,7 +32,6 @@ pub fn build(b: *Builder) void {
         .glibc_version = null,
     };
     const target = b.resolveTargetQuery(query);
-    std.debug.print("\n\nTarget:\n{}\n\n", .{target});
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
@@ -50,9 +47,6 @@ pub fn build(b: *Builder) void {
         .strip = false,
         .single_threaded = true, // single core cpu
     });
-
-    elf.setLinkerScriptPath(.{ .path = "src/STM32L476RGTx_FLASH.ld" });
-    // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
 
     const asm_sources = [_][]const u8{"src/startup_stm32l476xx.s"};
     const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
@@ -128,7 +122,7 @@ pub fn build(b: *Builder) void {
     elf.linkSystemLibrary("gcc"); // "-lgcc"
 
     // Allow float formating (printf, sprintf, ...)
-    //elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
+    // elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
 
     // Manually include C runtime objects bundled with arm-none-eabi-gcc
     elf.addObjectFile(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ float_abi_opt ++ "/crt0.o" });
@@ -138,6 +132,9 @@ pub fn build(b: *Builder) void {
     elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtn.o" });
 
     //////////////////////////////////////////////////////////////////
+    elf.setLinkerScriptPath(.{ .path = "src/STM32L476RGTx_FLASH.ld" });
+    // elf.setVerboseCC(true);
+    // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
     elf.want_lto = false; // -flto
     elf.link_data_sections = true; // -fdata-sections
@@ -173,6 +170,12 @@ pub fn build(b: *Builder) void {
     flash_cmd.step.dependOn(&bin.step);
     const flash_step = b.step("flash", "Flash and run the app on your Nucleo-64");
     flash_step.dependOn(&flash_cmd.step);
+
+    const clean_step = b.step("clean", "Clean up");
+    clean_step.dependOn(&b.addRemoveDirTree(b.install_path).step);
+    if (builtin.os.tag != .windows) {
+        clean_step.dependOn(&b.addRemoveDirTree(b.pathFromRoot("zig-cache")).step);
+    }
 
     b.default_step.dependOn(&elf.step);
     b.installArtifact(elf);
