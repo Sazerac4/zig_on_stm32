@@ -24,7 +24,7 @@ pub fn build(b: *Builder) void {
     const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
-        .cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.fp16}), //FIXME: Better way to pass arm "mfpu=fpv4-sp-d16" option ?
+        //.cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.}), //FIXME: What is the ARM features to pass for STM32L4 ?
         .os_tag = .freestanding,
         .os_version_min = undefined,
         .os_version_max = undefined,
@@ -71,7 +71,7 @@ pub fn build(b: *Builder) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfpu=fpv4-sp-d16" };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16" };
 
     const driver_file = .{
         .files = &c_sources_drivers,
