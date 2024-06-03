@@ -1,9 +1,15 @@
 ######################################################################
 # User
 ######################################################################
+#tmp user folder
 tmp/
-.cache/
+#clangd cache
+.cache/ 
 compile_commands.json
+
+#vscode
+*/.vscode/settings.json
+.cortex-debug.*.state.json
 
 ######################################################################
 # Zig
@@ -19,13 +25,14 @@ compile_commands.json
 # Cheers!
 # -andrewrk
 
-zig-cache/
+.zig-cache/
+zig-cache/ 
 zig-out/
-/release/
-/debug/
-/build/
-/build-*/
-/docgen_tmp/
+release/
+debug/
+build/
+build-*/
+docgen_tmp/
 
 
 ######################################################################

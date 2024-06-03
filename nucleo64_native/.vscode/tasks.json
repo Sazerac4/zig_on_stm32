@@ -1,0 +1,107 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "init-cmake",
+            "type": "shell",
+            "linux": {
+                "command": "cmake --preset=Debug .",
+            },
+            "osx": {
+                "command": "cmake --preset=Debug .",
+            },
+            "windows": {
+                "command": "cmake --preset=Debug .",
+            },
+            "options": {
+                "cwd": "${workspaceRoot}",
+                "statusbar": {
+                    "hide": true
+                }
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "clean-build",
+            "type": "shell",
+            "linux": {
+                "command": "cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first",
+            },
+            "osx": {
+                "command": "cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first",
+            },
+            "windows": {
+                "command": "cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first",
+            },
+            "options": {
+                "cwd": "${workspaceRoot}/build/Debug",
+                "statusbar": {
+                    "label": "♻ clean-build"
+                }
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "linux": {
+                "command": "cmake --build . -j$(nproc)",
+            },
+            "osx": {
+                "command": "cmake --build . -j$(nproc)",
+            },
+            "windows": {
+                "command": "cmake --build . -j$(nproc)",
+            },
+            "options": {
+                "cwd": "${workspaceRoot}/build/Debug/",
+                "statusbar": {
+                    "color": "#48c548",
+                    "label": "$(gear) build"
+                }
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "flash",
+            "type": "shell",
+            "linux": {
+                "command": "STM32_Programmer_CLI -c port=SWD freq=4000 -w *.hex --reset=SWrst -rst",
+            },
+            "osx": {
+                "command": "STM32_Programmer_CLI -c port=SWD freq=4000 -w *.hex --reset=SWrst -rst",
+            },
+            "windows": {
+                "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",
+            },
+            "options": {
+                "cwd": "${workspaceRoot}/build/Debug",
+                "statusbar": {
+                    "color": "#dfdc2f",
+                    "label": "$(chip) flash"
+                }
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+    ]
+}
