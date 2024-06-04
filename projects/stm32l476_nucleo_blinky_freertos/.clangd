@@ -1,7 +1,6 @@
 CompileFlags:
   Add: [ ]
   Compiler: /opt/bin/arm-none-eabi-gcc   # Change argv[0] of compile flags
-  CompilationDatabase : "./build/Debug/" # FIXME: Work ?
 
 Hover:
   ShowAKA: No

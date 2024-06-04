@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
-#
+
+####################################################################
 # Core project settings
-#
+####################################################################
 set(PROJ_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 include(${PROJ_PATH}/cmake/utils.cmake)
 
@@ -23,10 +24,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-# Add bsp layer
-include(${PROJ_PATH}/cmake/stm32l4.cmake)
-include(${PROJ_PATH}/cmake/library.cmake)
 
+####################################################################
 #
 # Core MCU flags, CPU, instruction set and FPU setup
 #
@@ -35,12 +34,59 @@ set(CPU_PARAMETERS
     # Other parameters -mcpu, -mfloat, -mfloat-abi, ...
     -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mcpu=cortex-m4)
 
+####################################################################
+
+# Add bsp layer
+include(${PROJ_PATH}/cmake/stm32l4.cmake)
+include(${PROJ_PATH}/cmake/freertos.cmake)
+include(${PROJ_PATH}/cmake/library.cmake)
+
+
 #
 # User flags
 #
 set(CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} \
-    -Wall")
+    -Wshadow  \
+    -Wundef  \
+    -Wmaybe-uninitialized  \
+    -Wmissing-prototypes  \
+    -Wno-discarded-qualifiers  \
+    -Wimplicit-fallthrough  \
+    -Wunused-function  \
+    -Werror=strict-prototypes  \
+    -Wpointer-arith  \
+    -Wno-error=cpp  \
+    -Wuninitialized  \
+    -Wunused-parameter  \
+    -Wno-missing-field-initializers  \
+    -Wtype-limits  \
+    -Wsizeof-pointer-memaccess  \
+    -Wno-format-nonliteral  \
+    -Wno-cast-qual  \
+    -Wunreachable-code  \
+    -Wno-switch-default  \
+    -Wno-switch-enum  \
+    -Wreturn-type  \
+    -Wmultichar  \
+    -Wformat-security  \
+    -Wignored-qualifiers  \
+    -Wno-error=pedantic  \
+    -Wno-sign-compare  \
+    -Wdouble-promotion  \
+    -Wclobbered  \
+    -Wdeprecated  \
+    -Wempty-body  \
+    -Wshift-negative-value  \
+    -Wstack-usage=512  \
+    -Wunused-value  \
+    -Wno-comment \
+    -Wall \
+    -Wextra")
+
+set(CMAKE_C_FLAGS
+    "${CMAKE_C_FLAGS} \
+    -fno-strict-aliasing")
 
 # Set linker script
 set(linker_script_SRC ${PROJ_PATH}/STM32L476RGTx_FLASH.ld)
@@ -52,6 +98,8 @@ set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 file(
   GLOB
   src_core_src_SRCS
+  ${PROJ_PATH}/Core/Src/stm32l4xx_hal_timebase_tim.c
+  ${PROJ_PATH}/Core/Src/freertos.c
   ${PROJ_PATH}/Core/Src/usart.c
   ${PROJ_PATH}/Core/Src/system_stm32l4xx.c
   ${PROJ_PATH}/Core/Src/stm32l4xx_it.c
@@ -60,6 +108,7 @@ file(
   ${PROJ_PATH}/Core/Src/gpio.c
   ${PROJ_PATH}/Core/Src/sysmem.c
   ${PROJ_PATH}/Core/Src/syscalls.c
+  ${PROJ_PATH}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
   )
 
 set(src_core_startup_SRCS ${PROJ_PATH}/startup_stm32l476xx.s)
@@ -105,7 +154,7 @@ add_executable(${EXECUTABLE} ${C_SOURCES} ${src_core_src_SRCS}
 #
 # Add linked libraries for linker
 #
-set(link_LIBS)
+set(link_LIBS freertos ll_drivers)
 target_link_libraries(${EXECUTABLE} ${link_LIBS})
 
 #
@@ -179,15 +228,16 @@ target_link_options(
   ${CPU_PARAMETERS}
   -Wl,-Map=${CMAKE_PROJECT_NAME}.map,--cref
   -u _printf_float # STDIO float formatting support (remove if not used)
+  -Wl,--undefined=uxTopUsedPriority
   -Wl,--start-group
   -lc
   -lm
   #-lnosys
   -Wl,--end-group
   -Wl,--print-memory-usage
-  -Wl,--gc-sections
-  -Wl,--verbose)
+  -Wl,--gc-sections)
 
+# Add custom __FILENAME__ for each app sources files.
 define_file_basename_for_sources(${EXECUTABLE})
 
 # Execute post-build to print size

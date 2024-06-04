@@ -53,7 +53,6 @@
 ENTRY(Reset_Handler)
 
 
-
 /* Specify the memory areas */
 MEMORY
 {

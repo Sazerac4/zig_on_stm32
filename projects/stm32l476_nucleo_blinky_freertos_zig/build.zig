@@ -92,6 +92,8 @@ pub fn build(b: *Builder) void {
         "Core/Src/main.c",
         "Core/Src/gpio.c",
         "Core/Src/usart.c",
+        "Core/Src/stm32l4xx_hal_timebase_tim.c",
+        "Core/Src/freertos.c",
         "Core/Src/stm32l4xx_it.c",
         "Core/Src/stm32l4xx_hal_msp.c",
         "Core/Src/system_stm32l4xx.c",
@@ -112,28 +114,29 @@ pub fn build(b: *Builder) void {
     //////////////////////////////////////////////////////////////////
     // FreeRTOS source code
     const c_includes_os = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F" };
-    const c_sources_os = [_][]const u8{
-        "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/list.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/queue.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/timers.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
-        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
-    };
-
     for (c_includes_os) |path| {
         elf.addIncludePath(.{ .path = path });
     }
-    const os_files = .{
+
+    //elf.linkLibrary(.{ .path = "library/libfreertos.a" });
+    elf.addObjectFile(.{ .path = "library/libfreertos.a" });
+
+    const c_sources_os = [_][]const u8{
+        // "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/list.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/queue.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/timers.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
+        // "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
+    };
+    elf.addCSourceFiles(.{
         .files = &c_sources_os,
         .flags = &c_sources_compile_flags,
-    };
-
-    elf.addCSourceFiles(os_files);
+    });
 
     //////////////////////////////////////////////////////////////////
     // Manually including libraries bundled with arm-none-eabi-gcc
@@ -156,6 +159,9 @@ pub fn build(b: *Builder) void {
     elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtbegin.o" });
     elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtend.o" });
     elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtn.o" });
+
+    // Tell to zig that libc is linked now
+    //elf.is_linking_libc = true;
 
     //////////////////////////////////////////////////////////////////
     elf.setLinkerScriptPath(.{ .path = "src/STM32L476RGTx_FLASH.ld" });
