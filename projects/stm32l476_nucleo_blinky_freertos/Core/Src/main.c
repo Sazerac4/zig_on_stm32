@@ -24,7 +24,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
 /* USER CODE END Includes */
@@ -86,10 +85,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-    char value[40] = {0};
-    size_t len     = 0;
-    len += snprintf(&value[len], sizeof(value) - len, "%u%u;", 20, 50);
-    len += snprintf(&value[len], sizeof(value) - len, "%2.3f;", 23.45677);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

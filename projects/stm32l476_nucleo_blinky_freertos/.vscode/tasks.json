@@ -82,10 +82,10 @@
             "label": "flash",
             "type": "shell",
             "linux": {
-                "command": "STM32_Programmer_CLI -c port=SWD freq=4000 -w *.hex --reset=SWrst -rst",
+                "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",
             },
             "osx": {
-                "command": "STM32_Programmer_CLI -c port=SWD freq=4000 -w *.hex --reset=SWrst -rst",
+                "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",
             },
             "windows": {
                 "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",

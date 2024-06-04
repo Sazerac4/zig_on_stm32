@@ -10,7 +10,7 @@ pub fn build(b: *Builder) void {
 
     //Gcc compiler definition //TODO: Pass it as argument ?
     //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
-    const project_name = "stm32l4_test";
+    const project_name = "blinky_freertos_zig";
 
     //GCC
     const gcc_version = "13.2.1";
@@ -49,7 +49,12 @@ pub fn build(b: *Builder) void {
     });
 
     const asm_sources = [_][]const u8{"src/startup_stm32l476xx.s"};
-    const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
+    for (asm_sources) |path| {
+        elf.addAssemblyFile(.{ .path = path });
+    }
+
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16" };
+
     const c_sources_drivers = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c",
@@ -71,23 +76,18 @@ pub fn build(b: *Builder) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16" };
-
-    const driver_file = .{
+    elf.addCSourceFiles(.{
         .files = &c_sources_drivers,
         .flags = &c_sources_compile_flags,
-    };
+    });
+
     //////////////////////////////////////////////////////////////////
-    for (asm_sources) |path| {
-        elf.addAssemblyFile(.{ .path = path });
-    }
+    const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
     for (c_includes) |path| {
         elf.addIncludePath(.{ .path = path });
     }
 
-    elf.addCSourceFiles(driver_file);
     //////////////////////////////////////////////////////////////////
-    const c_includes_core = [_][]const u8{"Core/Inc"};
     const c_sources_core = [_][]const u8{
         "Core/Src/main.c",
         "Core/Src/gpio.c",
@@ -100,16 +100,15 @@ pub fn build(b: *Builder) void {
         "Core/Src/sysmem.c",
         "Core/Src/syscalls.c",
     };
+    elf.addCSourceFiles(.{
+        .files = &c_sources_core,
+        .flags = &c_sources_compile_flags,
+    });
 
+    const c_includes_core = [_][]const u8{"Core/Inc"};
     for (c_includes_core) |path| {
         elf.addIncludePath(.{ .path = path });
     }
-    const core_files = .{
-        .files = &c_sources_core,
-        .flags = &c_sources_compile_flags,
-    };
-
-    elf.addCSourceFiles(core_files);
 
     //////////////////////////////////////////////////////////////////
     // FreeRTOS source code
@@ -118,8 +117,7 @@ pub fn build(b: *Builder) void {
         elf.addIncludePath(.{ .path = path });
     }
 
-    //elf.linkLibrary(.{ .path = "library/libfreertos.a" });
-    elf.addObjectFile(.{ .path = "library/libfreertos.a" });
+    elf.addObjectFile(.{ .path = "library/libfreertos.a" }); //FIXME: good way to include .a ?
 
     const c_sources_os = [_][]const u8{
         // "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",

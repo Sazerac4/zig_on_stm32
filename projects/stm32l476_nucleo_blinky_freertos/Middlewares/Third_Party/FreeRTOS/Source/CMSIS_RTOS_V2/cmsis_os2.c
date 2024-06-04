@@ -121,7 +121,7 @@ static osKernelState_t KernelState = osKernelInactive;
     HeapRegion_t array.
   */
   #define HEAP_5_REGION_SETUP   1
-
+  
   #ifndef configHEAP_5_REGIONS
     #define configHEAP_5_REGIONS xHeapRegions
 
@@ -1564,7 +1564,7 @@ osSemaphoreId_t osSemaphoreNew (uint32_t max_count, uint32_t initial_count, cons
           #endif
         }
       }
-
+      
       #if (configQUEUE_REGISTRY_SIZE > 0)
       if (hSemaphore != NULL) {
         if (attr != NULL) {

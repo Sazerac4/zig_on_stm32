@@ -8,9 +8,9 @@ set(PROJ_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 include(${PROJ_PATH}/cmake/utils.cmake)
 
 project(
-  "nucleo64"
+  "blinky_freertos"
   VERSION "${GIT_SEMVER}"
-  DESCRIPTION "Nucleo64"
+  DESCRIPTION "Blink led with FreeRTOS and HAL drivers"
   HOMEPAGE_URL ""
   LANGUAGES C)
 enable_language(C CXX ASM)
