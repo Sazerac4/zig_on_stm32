@@ -1,0 +1,23 @@
+FROM ubuntu:24.04
+LABEL description "Build zig examples" \
+    maintainer="Sazerac4 <lm-embeddedsystems@laposte.net>"
+
+ENV UID=1000
+ENV GID=1000
+ENV USER=ubuntu
+
+#Update the image to the latest packages
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt upgrade -y
+
+#Install tools
+RUN apt install -y build-essential sudo git cmake wget bear clang-18-format clang-18-tidy stlink-tools openocd clang-18
+
+#Clean image
+RUN apt clean && rm -rf -- /var/lib/apt/lists/*
+
+#VWorkdir
+VOLUME /projects
+WORKDIR /projects
+
+CMD [ "/bin/bash" ]

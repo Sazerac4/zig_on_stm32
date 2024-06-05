@@ -88,18 +88,7 @@ pub fn build(b: *Builder) void {
     }
 
     //////////////////////////////////////////////////////////////////
-    const c_sources_core = [_][]const u8{
-        "Core/Src/main.c",
-        "Core/Src/gpio.c",
-        "Core/Src/usart.c",
-        "Core/Src/stm32l4xx_hal_timebase_tim.c",
-        "Core/Src/freertos.c",
-        "Core/Src/stm32l4xx_it.c",
-        "Core/Src/stm32l4xx_hal_msp.c",
-        "Core/Src/system_stm32l4xx.c",
-        "Core/Src/sysmem.c",
-        "Core/Src/syscalls.c",
-    };
+    const c_sources_core = [_][]const u8{ "Core/Src/main.c", "Core/Src/gpio.c", "Core/Src/usart.c", "Core/Src/stm32l4xx_hal_timebase_tim.c", "Core/Src/freertos.c", "Core/Src/stm32l4xx_it.c", "Core/Src/stm32l4xx_hal_msp.c", "Core/Src/system_stm32l4xx.c", "Core/Src/sysmem.c", "Core/Src/syscalls.c", "Core/Src/freertos-openocd.c" };
     elf.addCSourceFiles(.{
         .files = &c_sources_core,
         .flags = &c_sources_compile_flags,
@@ -135,6 +124,9 @@ pub fn build(b: *Builder) void {
         .files = &c_sources_os,
         .flags = &c_sources_compile_flags,
     });
+
+    //Needed to debug task
+    elf.forceUndefinedSymbol("uxTopUsedPriority");
 
     //////////////////////////////////////////////////////////////////
     // Manually including libraries bundled with arm-none-eabi-gcc

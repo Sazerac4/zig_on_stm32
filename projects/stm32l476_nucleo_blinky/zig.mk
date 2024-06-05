@@ -18,6 +18,9 @@ TARGET = nucleo64
 GCC_VERSION = 13.2.1
 GCC_PATH = "/opt/dev/xpack-arm-none-eabi-gcc-13.2.1-1.1/"
 GCC_ARCH = "v7e-m+fp"
+# You can select clang here if you want
+COMPILER = zig cc
+
 ######################################
 # building variables
 ######################################
@@ -64,19 +67,7 @@ Core/Src/system_stm32l4xx.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
-Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
-Core/Src/freertos.c \
-Core/Src/stm32l4xx_hal_timebase_tim.c \
-Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-Middlewares/Third_Party/FreeRTOS/Source/list.c \
-Middlewares/Third_Party/FreeRTOS/Source/queue.c \
-Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -101,8 +92,8 @@ SZ = $(GCC_PATH)/bin/$(PREFIX)size
 
 
 # CHANGE NOTE: zig cc is now used in place of arm-none-eabi-gcc
-CC = zig-dev cc
-AS = zig-dev cc -x assembler-with-cpp
+CC = $(COMPILER)
+AS = $(COMPILER) cc -x assembler-with-cpp
 
 
 HEX = $(CP) -O ihex
@@ -113,7 +104,12 @@ BIN = $(CP) -O binary -S
 #######################################
 # cpu
 # CHANGE NOTE: zig cc uses "_" instead of "-" in -mcpu arg
-CPU = -mcpu=cortex_m4
+COMPILER_PREFIX := $(findstring clang,$(COMPILER))
+ifeq ($(COMPILER_PREFIX),clang)
+    CPU = -mcpu=cortex-m4 #clang option
+else
+    CPU = -mcpu=cortex_m4 #zig option
+endif
 
 # fpu
 FPU = -mfpu=fpv4-sp-d16
@@ -142,10 +138,7 @@ C_INCLUDES =  \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/STM32L4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
--IDrivers/CMSIS/Include \
--IMiddlewares/Third_Party/FreeRTOS/Source/include \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
+-IDrivers/CMSIS/Include
 
 
 # compile gcc flags
@@ -155,7 +148,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 CFLAGS += -isystem $(GCC_PATH)/arm-none-eabi/include $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+CFLAGS += -g -gdwarf-3
 endif
 
 

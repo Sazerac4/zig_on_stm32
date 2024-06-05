@@ -13,11 +13,14 @@
 ######################################
 # target
 ######################################
-TARGET = nucleo64
+TARGET = blinky_freertos
 
 GCC_VERSION = 13.2.1
 GCC_PATH = "/opt/dev/xpack-arm-none-eabi-gcc-13.2.1-1.1/"
 GCC_ARCH = "v7e-m+fp"
+# You can select clang here if you want
+COMPILER = zig cc
+
 ######################################
 # building variables
 ######################################
@@ -63,6 +66,7 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c \
 Core/Src/system_stm32l4xx.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
+Core/Src/freertos-openocd.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
 Core/Src/freertos.c \
@@ -101,9 +105,8 @@ SZ = $(GCC_PATH)/bin/$(PREFIX)size
 
 
 # CHANGE NOTE: zig cc is now used in place of arm-none-eabi-gcc
-CC = zig-dev cc
-AS = zig-dev cc -x assembler-with-cpp
-
+CC = $(COMPILER)
+AS = $(COMPILER) -x assembler-with-cpp
 
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -113,7 +116,12 @@ BIN = $(CP) -O binary -S
 #######################################
 # cpu
 # CHANGE NOTE: zig cc uses "_" instead of "-" in -mcpu arg
-CPU = -mcpu=cortex_m4
+ifeq ($(COMPILER_PREFIX),clang)
+    CPU = -mcpu=cortex-m4 #clang option
+else
+    CPU = -mcpu=cortex_m4 #zig option
+endif
+
 
 # fpu
 FPU = -mfpu=fpv4-sp-d16
@@ -177,7 +185,7 @@ LDSCRIPT = STM32L476RGTx_FLASH.ld
 #  - "-lnosys" is also skipped, as ST already provides code with this functionality, so we get duplicate symbol errors otherwise
 LIBS = -lc_nano -lm
 LIBDIR = -L$(GCC_PATH)/lib/gcc/arm-none-eabi/$(GCC_VERSION)/thumb/v7e-m+fp/hard/ -L$(GCC_PATH)/arm-none-eabi/lib/thumb/v7e-m+fp/hard/
-LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sections
+LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,--gc-sections -Wl,--undefined=uxTopUsedPriority
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin

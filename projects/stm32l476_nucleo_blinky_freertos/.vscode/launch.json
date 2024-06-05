@@ -14,6 +14,7 @@
             "configFiles": [
                 "interface/stlink.cfg",
                 "target/stm32l4x.cfg",
+                "${workspaceFolder}/freertos-openocd.cfg"
             ],
             "liveWatch": {
                 "enabled": false,
@@ -35,6 +36,7 @@
             "configFiles": [
                 "interface/stlink.cfg",
                 "target/stm32l4x.cfg",
+                "${workspaceFolder}/freertos-openocd.cfg"
             ],
             "liveWatch": {
                 "enabled": false,

@@ -108,6 +108,7 @@ file(
   ${PROJ_PATH}/Core/Src/gpio.c
   ${PROJ_PATH}/Core/Src/sysmem.c
   ${PROJ_PATH}/Core/Src/syscalls.c
+  ${PROJ_PATH}/Core/Src/freertos-openocd.c
   ${PROJ_PATH}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
   )
 

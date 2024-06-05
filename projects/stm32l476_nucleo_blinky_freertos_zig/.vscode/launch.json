@@ -13,7 +13,8 @@
             "device": "STM32L471RG",
             "configFiles": [
                 "interface/stlink.cfg",
-                "target/stm32l4x.cfg"
+                "target/stm32l4x.cfg",
+                "${workspaceFolder}/freertos-openocd.cfg"
             ],
             "liveWatch": {
                 "enabled": false,
@@ -34,7 +35,8 @@
             "device": "STM32L471RG",
             "configFiles": [
                 "interface/stlink.cfg",
-                "target/stm32l4x.cfg"
+                "target/stm32l4x.cfg",
+                "${workspaceFolder}/freertos-openocd.cfg"
             ],
             "liveWatch": {
                 "enabled": false,

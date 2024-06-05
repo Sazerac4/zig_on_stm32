@@ -29,7 +29,7 @@ export fn zig_entrypoint() void {
     // Temporary task to initialize the system
     const pvParameters: ?*anyopaque = null;
     const pxCreatedTask: ?*os.TaskHandle_t = null;
-    _ = os.xTaskCreate(zig_task, "Init", 256, pvParameters, 15, pxCreatedTask);
+    _ = os.xTaskCreate(zig_task, "Blinky", 256, pvParameters, 15, pxCreatedTask);
     // Start application
     os.vTaskStartScheduler();
 
