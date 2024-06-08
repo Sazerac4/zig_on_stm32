@@ -131,7 +131,7 @@ pub fn build(b: *std.Build) void {
         .flags = &c_sources_compile_flags,
     });
 
-    //Needed to debug task
+    // Used when debugging with gdb/openocd
     elf.forceUndefinedSymbol("uxTopUsedPriority");
 
     //////////////////////////////////////////////////////////////////

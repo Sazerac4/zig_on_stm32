@@ -2,15 +2,13 @@ const std = @import("std");
 const c = @cImport({
     @cDefine("USE_HAL_DRIVER", {});
     @cDefine("STM32L476xx", {});
-    @cDefine("__PROGRAM_START", ""); //Needed because of a bug: https://github.com/ziglang/zig/issues/19687
+    @cDefine("__PROGRAM_START", {}); //bug: https://github.com/ziglang/zig/issues/19687
     @cInclude("main.h");
 });
 
 const os = @cImport({
     @cInclude("FreeRTOS.h");
     @cInclude("task.h");
-    @cInclude("timers.h");
-    @cInclude("queue.h");
 });
 
 export fn zig_task(params: ?*anyopaque) callconv(.C) void {
