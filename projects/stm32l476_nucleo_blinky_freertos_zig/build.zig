@@ -1,24 +1,10 @@
 const builtin = @import("builtin");
 const std = @import("std");
-const zcc = @import("compile_commands");
-const Builder = std.Build;
 
-//TODO: Add map option to the linker (-Wl,-Map=<name>.map,--cref)
-//TODO: Add memory view if possible (-Wl,--print-memory-usage)
+pub fn build(b: *std.Build) void {
 
-pub fn build(b: *Builder) void {
-
-    //Gcc compiler definition //TODO: Pass it as argument ?
     //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
-    const project_name = "blinky_freertos_zig";
-
-    //GCC
-    const gcc_version = "13.2.1";
-    const gcc_path = "/opt/dev/xpack-arm-none-eabi-gcc-13.2.1-1.1/";
-    //soft   => v7e-m/nofp
-    //softfp => v7e-m+fp/softfp
-    //hard   => v7e-m+fp/hard
-    const float_abi_opt = "v7e-m+fp/hard"; //(-mfloat-abi=<select>)
+    const executable_name = "blinky_freertos_zig";
 
     // Target STM32L476RG
     const query: std.zig.CrossTarget = .{
@@ -38,8 +24,8 @@ pub fn build(b: *Builder) void {
     const opti = b.standardOptimizeOption(.{});
 
     const elf = b.addExecutable(.{
-        .name = project_name ++ ".elf",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .name = executable_name ++ ".elf",
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = opti,
         .linkage = .static,
@@ -48,9 +34,29 @@ pub fn build(b: *Builder) void {
         .single_threaded = true, // single core cpu
     });
 
+    //////////////////////////////////////////////////////////////////
+    // User Options
+    // Try to find arm-none-eabi-gcc program at a user specified path, or PATH variable if none provided
+    const arm_gcc_pgm = if (b.option([]const u8, "ARM_GCC_PATH", "Path to arm-none-eabi-gcc compiler")) |arm_gcc_path|
+        b.findProgram(&.{"arm-none-eabi-gcc"}, &.{arm_gcc_path}) catch {
+            std.log.err("Couldn't find arm-none-eabi-gcc at provided path: {s}\n", .{arm_gcc_path});
+            unreachable;
+        }
+    else
+        b.findProgram(&.{"arm-none-eabi-gcc"}, &.{}) catch {
+            std.log.err("Couldn't find arm-none-eabi-gcc in PATH, try manually providing the path to this executable with -Darmgcc=[path]\n", .{});
+            unreachable;
+        };
+
+    // Allow user to enable float formatting in newlib (printf, sprintf, ...)
+    if (b.option(bool, "NEWLIB_PRINTF_FLOAT", "Force newlib to include float support for printf()")) |_| {
+        elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
+    }
+    //////////////////////////////////////////////////////////////////
+
     const asm_sources = [_][]const u8{"src/startup_stm32l476xx.s"};
     for (asm_sources) |path| {
-        elf.addAssemblyFile(.{ .path = path });
+        elf.addAssemblyFile(b.path(path));
     }
 
     const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16" };
@@ -84,7 +90,7 @@ pub fn build(b: *Builder) void {
     //////////////////////////////////////////////////////////////////
     const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
     for (c_includes) |path| {
-        elf.addIncludePath(.{ .path = path });
+        elf.addIncludePath(b.path(path));
     }
 
     //////////////////////////////////////////////////////////////////
@@ -96,17 +102,17 @@ pub fn build(b: *Builder) void {
 
     const c_includes_core = [_][]const u8{"Core/Inc"};
     for (c_includes_core) |path| {
-        elf.addIncludePath(.{ .path = path });
+        elf.addIncludePath(b.path(path));
     }
 
     //////////////////////////////////////////////////////////////////
     // FreeRTOS source code
     const c_includes_os = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F" };
     for (c_includes_os) |path| {
-        elf.addIncludePath(.{ .path = path });
+        elf.addIncludePath(b.path(path));
     }
 
-    elf.addObjectFile(.{ .path = "library/libfreertos.a" }); //FIXME: good way to include .a ?
+    elf.addObjectFile(b.path("library/libfreertos.a")); //FIXME: good way to include .a ?
 
     const c_sources_os = [_][]const u8{
         // "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
@@ -129,32 +135,33 @@ pub fn build(b: *Builder) void {
     elf.forceUndefinedSymbol("uxTopUsedPriority");
 
     //////////////////////////////////////////////////////////////////
-    // Manually including libraries bundled with arm-none-eabi-gcc
-    elf.addLibraryPath(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ float_abi_opt });
-    elf.addLibraryPath(.{ .path = gcc_path ++ "lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt });
-    elf.addSystemIncludePath(.{ .path = gcc_path ++ "arm-none-eabi/include" });
+    //////////////////////////////////////////////////////////////////
+    //  Use gcc-arm-none-eabi to figure out where library paths are
+    const gcc_arm_sysroot_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-print-sysroot" }), "\r\n");
+    const gcc_arm_multidir_relative_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-print-multi-directory" }), "\r\n");
+    const gcc_arm_version = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-dumpversion" }), "\r\n");
+    const gcc_arm_lib_path1 = b.fmt("{s}/../lib/gcc/arm-none-eabi/{s}/{s}", .{ gcc_arm_sysroot_path, gcc_arm_version, gcc_arm_multidir_relative_path });
+    const gcc_arm_lib_path2 = b.fmt("{s}/lib/{s}", .{ gcc_arm_sysroot_path, gcc_arm_multidir_relative_path });
 
-    //elf.linkSystemLibrary("nosys"); // "-lnosys",
-    //elf.linkSystemLibrary("c_nano"); // "-lc_nano"
-    elf.linkSystemLibrary("g_nano"); // "-lg_nano" //NOTE: Same as c_nano but with debug symbol
-    elf.linkSystemLibrary("m"); // "-lm"
-    elf.linkSystemLibrary("gcc"); // "-lgcc"
-
-    // Allow float formating (printf, sprintf, ...)
-    // elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
+    // Manually add "nano" variant newlib C standard lib from arm-none-eabi-gcc library folders
+    elf.addLibraryPath(.{ .src_path = .{ .owner = b, .sub_path = gcc_arm_lib_path1 } });
+    elf.addLibraryPath(.{ .src_path = .{ .owner = b, .sub_path = gcc_arm_lib_path2 } });
+    elf.addSystemIncludePath(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) } });
+    elf.linkSystemLibrary("c_nano"); // Use "g_nano" ?
+    elf.linkSystemLibrary("m");
 
     // Manually include C runtime objects bundled with arm-none-eabi-gcc
-    elf.addObjectFile(.{ .path = gcc_path ++ "arm-none-eabi/lib/thumb/" ++ float_abi_opt ++ "/crt0.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crti.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtbegin.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtend.o" });
-    elf.addObjectFile(.{ .path = gcc_path ++ "/lib/gcc/arm-none-eabi/" ++ gcc_version ++ "/thumb/" ++ float_abi_opt ++ "/crtn.o" });
+    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crt0.o", .{gcc_arm_lib_path2}) } });
+    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crti.o", .{gcc_arm_lib_path1}) } });
+    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crtbegin.o", .{gcc_arm_lib_path1}) } });
+    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crtend.o", .{gcc_arm_lib_path1}) } });
+    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) } });
 
     // Tell to zig that libc is linked now
     //elf.is_linking_libc = true;
 
     //////////////////////////////////////////////////////////////////
-    elf.setLinkerScriptPath(.{ .path = "src/STM32L476RGTx_FLASH.ld" });
+    elf.setLinkerScriptPath(b.path("src/STM32L476RGTx_FLASH.ld"));
     // elf.setVerboseCC(true);
     // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
@@ -168,7 +175,7 @@ pub fn build(b: *Builder) void {
         .format = .bin,
     });
     bin.step.dependOn(&elf.step);
-    const copy_bin = b.addInstallBinFile(bin.getOutput(), project_name ++ ".bin");
+    const copy_bin = b.addInstallBinFile(bin.getOutput(), executable_name ++ ".bin");
     b.default_step.dependOn(&copy_bin.step);
 
     // Copy the bin out of the elf
@@ -176,7 +183,7 @@ pub fn build(b: *Builder) void {
         .format = .hex,
     });
     hex.step.dependOn(&elf.step);
-    const copy_hex = b.addInstallBinFile(hex.getOutput(), project_name ++ ".hex");
+    const copy_hex = b.addInstallBinFile(hex.getOutput(), executable_name ++ ".hex");
     b.default_step.dependOn(&copy_hex.step);
 
     //Add st-flash command (https://github.com/stlink-org/stlink)
@@ -186,7 +193,7 @@ pub fn build(b: *Builder) void {
         "--freq=4000k",
         "--format=ihex",
         "write",
-        "zig-out/bin/" ++ project_name ++ ".hex",
+        "zig-out/bin/" ++ executable_name ++ ".hex",
     });
 
     flash_cmd.step.dependOn(&bin.step);

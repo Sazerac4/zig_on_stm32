@@ -37,7 +37,7 @@ target_compile_definitions(
          $<$<COMPILE_LANGUAGE:C>:
          "STM32L476xx"
          "USE_HAL_DRIVER"
-         "">
+         >
          $<$<COMPILE_LANGUAGE:CXX>:
          >
          $<$<COMPILE_LANGUAGE:ASM>:

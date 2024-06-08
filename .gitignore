@@ -1,15 +1,27 @@
 ######################################################################
 # User
 ######################################################################
-#A folder that the user doesn't want to track content
+#Makefile from CubeMX are not used anymore to compile, use cmake instead
+Makefile
+*.mk
+
+# folder that the user doesn't want to track content
 **/tmp/
-#clangd cache
+# clangd cache
 **/.cache/ 
 
-#vscode
+# stm32 tools
+.mxproject
+
+# vscode
 **/.vscode/settings.json
 **/.vscode/.cortex-debug.*.json
+*.code-workspace
 
+# miscellaneous files
+*.log
+*.bak
+*.old
 
 ######################################################################
 # Cmake
