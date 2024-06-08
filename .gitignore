@@ -1,9 +1,43 @@
 ######################################################################
 # User
 ######################################################################
-tmp/
-.cache/
+#Makefile from CubeMX are not used anymore to compile, use cmake instead
+Makefile
+*.mk
+
+# folder that the user doesn't want to track content
+**/tmp/
+# clangd cache
+**/.cache/ 
+
+# stm32 tools
+.mxproject
+
+# vscode
+**/.vscode/settings.json
+**/.vscode/.cortex-debug.*.json
+*.code-workspace
+
+# miscellaneous files
+*.log
+*.bak
+*.old
+
+######################################################################
+# Cmake
+######################################################################
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
 compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
 
 ######################################################################
 # Zig
@@ -19,13 +53,15 @@ compile_commands.json
 # Cheers!
 # -andrewrk
 
-zig-cache/
-zig-out/
-/release/
-/debug/
-/build/
-/build-*/
-/docgen_tmp/
+
+**/.zig-cache/ 
+**/zig-cache/ 
+**/zig-out/
+**/release/
+**/debug/
+**/build/
+**/build-*/
+**/docgen_tmp/
 
 
 ######################################################################
