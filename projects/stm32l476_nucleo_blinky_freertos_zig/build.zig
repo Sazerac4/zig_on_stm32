@@ -10,10 +10,8 @@ pub fn build(b: *std.Build) void {
     const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
-        //.cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.}), //FIXME: What is the ARM features to pass for STM32L4 ?
+        .cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.vfp4d16sp}),
         .os_tag = .freestanding,
-        .os_version_min = undefined,
-        .os_version_max = undefined,
         .abi = .eabihf,
         .glibc_version = null,
     };
@@ -59,7 +57,7 @@ pub fn build(b: *std.Build) void {
         elf.addAssemblyFile(b.path(path));
     }
 
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16" };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
     const c_sources_drivers = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
@@ -112,19 +110,17 @@ pub fn build(b: *std.Build) void {
         elf.addIncludePath(b.path(path));
     }
 
-    elf.addObjectFile(b.path("library/libfreertos.a")); //FIXME: good way to include .a ?
-
     const c_sources_os = [_][]const u8{
-        // "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/list.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/queue.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/timers.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/list.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/queue.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/timers.c",
         "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
-        // "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
     };
     elf.addCSourceFiles(.{
         .files = &c_sources_os,

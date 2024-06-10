@@ -5,15 +5,12 @@ pub fn build(b: *std.Build) void {
 
     //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
     const executable_name = "blinky_zig";
-
     // Target STM32L476RG
     const query: std.zig.CrossTarget = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
-        //.cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.}), //FIXME: Better way to pass arm "mfpu=fpv4-sp-d16" option ?
+        .cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.vfp4d16sp}),
         .os_tag = .freestanding,
-        .os_version_min = undefined,
-        .os_version_max = undefined,
         .abi = .eabihf,
         .glibc_version = null,
     };
@@ -77,7 +74,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-mfpu=fpv4-sp-d16" };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
     const driver_file = .{
         .files = &c_sources_drivers,

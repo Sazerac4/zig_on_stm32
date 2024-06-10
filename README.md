@@ -45,18 +45,9 @@ cd  /projects/<name>/
 ...
 ```
 
-## FreeRTOS
-
-To generate or update the FreRTOS library to be used in the zig program, I use Cmake
-
-- Build `stm32l476_nucleo_blinky_freertos` program
-- copy `stm32l476_nucleo_blinky_freertos/build/Debug/libfreertos.a` to  `stm32l476_nucleo_blinky_freertos_zig/library`
-- Build `stm32l476_nucleo_blinky_freertos_zig` 
-
-
 ## Reference:
 
 - [STM32 Guide](https://github.com/Sazerac4/stm32-zig-porting-guide/tree/main) will help you to understand and port your current project. Ziggit topic [here](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414)
 - This project may interest you: [Microzig](https://github.com/ZigEmbeddedGroup/microzig) A Unified abstraction layer and HAL for several microcontrollers
 
-
+- FreeRTOS discussion on [ziggit](https://ziggit.dev/t/exploring-zig-on-stm32-with-freertos/4653)
