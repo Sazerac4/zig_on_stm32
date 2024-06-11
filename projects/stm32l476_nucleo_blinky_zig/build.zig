@@ -119,18 +119,18 @@ pub fn build(b: *std.Build) void {
     const gcc_arm_lib_path2 = b.fmt("{s}/lib/{s}", .{ gcc_arm_sysroot_path, gcc_arm_multidir_relative_path });
 
     // Manually add "nano" variant newlib C standard lib from arm-none-eabi-gcc library folders
-    elf.addLibraryPath(.{ .src_path = .{ .owner = b, .sub_path = gcc_arm_lib_path1 } });
-    elf.addLibraryPath(.{ .src_path = .{ .owner = b, .sub_path = gcc_arm_lib_path2 } });
-    elf.addSystemIncludePath(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) } });
-    elf.linkSystemLibrary("c_nano");
+    elf.addLibraryPath(.{ .cwd_relative = gcc_arm_lib_path1 });
+    elf.addLibraryPath(.{ .cwd_relative = gcc_arm_lib_path2 });
+    elf.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) });
+    elf.linkSystemLibrary("c_nano"); // Use "g_nano" ?
     elf.linkSystemLibrary("m");
 
     // Manually include C runtime objects bundled with arm-none-eabi-gcc
-    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crt0.o", .{gcc_arm_lib_path2}) } });
-    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crti.o", .{gcc_arm_lib_path1}) } });
-    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crtbegin.o", .{gcc_arm_lib_path1}) } });
-    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crtend.o", .{gcc_arm_lib_path1}) } });
-    elf.addObjectFile(.{ .src_path = .{ .owner = b, .sub_path = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) } });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crt0.o", .{gcc_arm_lib_path2}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crti.o", .{gcc_arm_lib_path1}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtbegin.o", .{gcc_arm_lib_path1}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtend.o", .{gcc_arm_lib_path1}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) });
 
     //////////////////////////////////////////////////////////////////
     elf.setLinkerScriptPath(b.path("src/STM32L476RGTx_FLASH.ld"));
