@@ -6,7 +6,7 @@ pub fn build(b: *std.Build) void {
     //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
     const executable_name = "blinky_zig";
     // Target STM32L476RG
-    const query: std.zig.CrossTarget = .{
+    const query: std.Target.Query = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
         .cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.vfp4d16sp}),
@@ -76,10 +76,6 @@ pub fn build(b: *std.Build) void {
     };
     const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
-    const driver_file = .{
-        .files = &c_sources_drivers,
-        .flags = &c_sources_compile_flags,
-    };
     //////////////////////////////////////////////////////////////////
     for (asm_sources) |path| {
         elf.addAssemblyFile(b.path(path));
@@ -88,7 +84,10 @@ pub fn build(b: *std.Build) void {
         elf.addIncludePath(b.path(path));
     }
 
-    elf.addCSourceFiles(driver_file);
+    elf.addCSourceFiles(.{
+        .files = &c_sources_drivers,
+        .flags = &c_sources_compile_flags,
+    });
     //////////////////////////////////////////////////////////////////
     const c_sources_core = [_][]const u8{
         "Core/Src/main.c",
@@ -133,7 +132,7 @@ pub fn build(b: *std.Build) void {
     elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) });
 
     //////////////////////////////////////////////////////////////////
-    elf.setLinkerScriptPath(b.path("src/STM32L476RGTx_FLASH.ld"));
+    elf.setLinkerScript(b.path("src/STM32L476RGTx_FLASH.ld"));
     // elf.setVerboseCC(true);
     // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
@@ -173,9 +172,9 @@ pub fn build(b: *std.Build) void {
     flash_step.dependOn(&flash_cmd.step);
 
     const clean_step = b.step("clean", "Clean up");
-    clean_step.dependOn(&b.addRemoveDirTree(b.install_path).step);
+    clean_step.dependOn(&b.addRemoveDirTree(.{ .cwd_relative = b.install_path }).step);
     if (builtin.os.tag != .windows) {
-        clean_step.dependOn(&b.addRemoveDirTree(b.pathFromRoot(".zig-cache")).step);
+        clean_step.dependOn(&b.addRemoveDirTree(.{ .cwd_relative = b.pathFromRoot(".zig-cache") }).step);
     }
 
     b.default_step.dependOn(&elf.step);

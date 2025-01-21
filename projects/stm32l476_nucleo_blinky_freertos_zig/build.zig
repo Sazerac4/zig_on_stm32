@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
     const executable_name = "blinky_freertos_zig";
 
     // Target STM32L476RG
-    const query: std.zig.CrossTarget = .{
+    const query: std.Target.Query = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
         .cpu_features_add = std.Target.arm.featureSet(&[_]std.Target.arm.Feature{std.Target.arm.Feature.vfp4d16sp}),
@@ -153,11 +153,8 @@ pub fn build(b: *std.Build) void {
     elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtend.o", .{gcc_arm_lib_path1}) });
     elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) });
 
-    // Tell to zig that libc is linked now
-    //elf.is_linking_libc = true;
-
     //////////////////////////////////////////////////////////////////
-    elf.setLinkerScriptPath(b.path("src/STM32L476RGTx_FLASH.ld"));
+    elf.setLinkerScript(b.path("src/STM32L476RGTx_FLASH.ld"));
     // elf.setVerboseCC(true);
     // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
@@ -197,9 +194,9 @@ pub fn build(b: *std.Build) void {
     flash_step.dependOn(&flash_cmd.step);
 
     const clean_step = b.step("clean", "Clean up");
-    clean_step.dependOn(&b.addRemoveDirTree(b.install_path).step);
+    clean_step.dependOn(&b.addRemoveDirTree(.{ .cwd_relative = b.install_path }).step);
     if (builtin.os.tag != .windows) {
-        clean_step.dependOn(&b.addRemoveDirTree(b.pathFromRoot("zig-cache")).step);
+        clean_step.dependOn(&b.addRemoveDirTree(.{ .cwd_relative = b.pathFromRoot(".zig-cache") }).step);
     }
 
     b.default_step.dependOn(&elf.step);
