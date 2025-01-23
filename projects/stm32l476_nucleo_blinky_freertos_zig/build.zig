@@ -21,15 +21,19 @@ pub fn build(b: *std.Build) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const opti = b.standardOptimizeOption(.{});
 
-    const elf = b.addExecutable(.{
-        .name = executable_name ++ ".elf",
+    const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = opti,
-        .linkage = .static,
         .link_libc = false,
         .strip = false,
         .single_threaded = true, // single core cpu
+    });
+
+    const elf = b.addExecutable(.{
+        .name = executable_name ++ ".elf",
+        .linkage = .static,
+        .root_module = exe_mod,
     });
 
     //////////////////////////////////////////////////////////////////
@@ -127,7 +131,7 @@ pub fn build(b: *std.Build) void {
         .flags = &c_sources_compile_flags,
     });
 
-    // Used when debugging with gdb/openocd
+    // Used for FreeRTOS when debugging with gdb/openocd
     elf.forceUndefinedSymbol("uxTopUsedPriority");
 
     //////////////////////////////////////////////////////////////////
