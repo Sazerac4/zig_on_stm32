@@ -23,4 +23,7 @@ RUN cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.t
 #Clean image
 RUN yum clean all && rm -rf -- /var/cache/yum && rm -rf -- /tmp/*
 
+WORKDIR /apps
+VOLUME  /apps
+
 CMD [ "/bin/bash" ]

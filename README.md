@@ -16,11 +16,10 @@ Each example of a C project below has its Zig equivalent ending with `_zig`
 
 **tools:**
 
-- arm-none-eabi-gcc : 13.2.1
+- arm-none-eabi-gcc : 14.2.1
 - zig :  0.14.0
 - STM32CubeMX : 6.13.0
 - stlink-tools : v1.8.0
-- openocd : 0.12.0
 
 ### Linux
 
@@ -44,7 +43,7 @@ You can build all firmware by with the image from ContainerFile
 #Create the image
 podman build -f ContainerFile --tag=zig_projects/build .
 #Run a container
-podman run --rm -it --privileged -v ./:/projects --name=zig_projects zig_projects/build
+podman run --rm -it --privileged -v ./projects:/apps --name=zig_projects zig_projects/build
 # Build a project
 cd  /projects/<name>/
 ...
