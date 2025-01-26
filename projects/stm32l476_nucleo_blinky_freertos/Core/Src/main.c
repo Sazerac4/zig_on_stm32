@@ -46,7 +46,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+#if (ZIG == 1)
+  extern void zig_entrypoint(void);
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,6 +94,10 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+#if (ZIG == 1)
+  zig_entrypoint(); //The program will stop here
+#endif
+
   // Temporary task to initialize the system
   xTaskCreate(_vTaskBlink, "Init", 256, NULL, 15, NULL);
   // Start application
@@ -177,9 +183,9 @@ static void _vTaskBlink(void* pvParameters)
     while (1)
     {
         HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-        vTaskDelay(50);
+        vTaskDelay(150);
         HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-        vTaskDelay(50);
+        vTaskDelay(150);
     }
 }
 /* USER CODE END 4 */

@@ -4,7 +4,8 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
 
     //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
-    const executable_name = "blinky";
+    const executable_name = "blinky_freertos";
+
     // Target
     const query: std.Target.Query = .{
         .cpu_arch = .thumb,
@@ -61,7 +62,12 @@ pub fn build(b: *std.Build) void {
     //////////////////////////////////////////////////////////////////
 
     const asm_sources = [_][]const u8{"startup_stm32l476xx.s"};
-    const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
+    for (asm_sources) |path| {
+        elf.addAssemblyFile(b.path(path));
+    }
+
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DZIG=" ++ zig_implementation };
+
     const c_sources_drivers = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c",
@@ -83,32 +89,19 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DZIG=" ++ zig_implementation };
-
-    //////////////////////////////////////////////////////////////////
-    for (asm_sources) |path| {
-        elf.addAssemblyFile(b.path(path));
-    }
-    for (c_includes) |path| {
-        elf.addIncludePath(b.path(path));
-    }
-
     elf.addCSourceFiles(.{
         .files = &c_sources_drivers,
         .flags = &c_sources_compile_flags,
     });
 
     //////////////////////////////////////////////////////////////////
-    const c_sources_core = [_][]const u8{
-        "Core/Src/main.c",
-        "Core/Src/gpio.c",
-        "Core/Src/usart.c",
-        "Core/Src/stm32l4xx_it.c",
-        "Core/Src/stm32l4xx_hal_msp.c",
-        "Core/Src/system_stm32l4xx.c",
-        "Core/Src/sysmem.c",
-        "Core/Src/syscalls.c",
-    };
+    const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
+    for (c_includes) |path| {
+        elf.addIncludePath(b.path(path));
+    }
+
+    //////////////////////////////////////////////////////////////////
+    const c_sources_core = [_][]const u8{ "Core/Src/main.c", "Core/Src/gpio.c", "Core/Src/usart.c", "Core/Src/stm32l4xx_hal_timebase_tim.c", "Core/Src/freertos.c", "Core/Src/stm32l4xx_it.c", "Core/Src/stm32l4xx_hal_msp.c", "Core/Src/system_stm32l4xx.c", "Core/Src/sysmem.c", "Core/Src/syscalls.c", "Core/Src/freertos-openocd.c" };
     elf.addCSourceFiles(.{
         .files = &c_sources_core,
         .flags = &c_sources_compile_flags,
@@ -119,6 +112,34 @@ pub fn build(b: *std.Build) void {
         elf.addIncludePath(b.path(path));
     }
 
+    //////////////////////////////////////////////////////////////////
+    // FreeRTOS source code
+    const c_includes_os = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F" };
+    for (c_includes_os) |path| {
+        elf.addIncludePath(b.path(path));
+    }
+
+    const c_sources_os = [_][]const u8{
+        "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/list.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/queue.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/timers.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
+    };
+    elf.addCSourceFiles(.{
+        .files = &c_sources_os,
+        .flags = &c_sources_compile_flags,
+    });
+
+    // Used for FreeRTOS when debugging with gdb/openocd
+    elf.forceUndefinedSymbol("uxTopUsedPriority");
+
+    //////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////
     //  Use gcc-arm-none-eabi to figure out where library paths are
     const gcc_arm_sysroot_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-print-sysroot" }), "\r\n");
@@ -178,7 +199,7 @@ pub fn build(b: *std.Build) void {
     });
 
     flash_cmd.step.dependOn(&bin.step);
-    const flash_step = b.step("flash", "Flash and run the firmware");
+    const flash_step = b.step("flash", "Flash and run the app on your Nucleo-64");
     flash_step.dependOn(&flash_cmd.step);
 
     const clean_step = b.step("clean", "Remove .zig-cache");
