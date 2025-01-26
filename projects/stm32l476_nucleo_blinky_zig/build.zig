@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
 
     //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
     const executable_name = "blinky_zig";
-    // Target STM32L476RG
+    // Target
     const query: std.Target.Query = .{
         .cpu_arch = .thumb,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
@@ -136,7 +136,7 @@ pub fn build(b: *std.Build) void {
     elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) });
 
     //////////////////////////////////////////////////////////////////
-    elf.setLinkerScript(b.path("src/STM32L476RGTx_FLASH.ld"));
+    elf.setLinkerScript(b.path("src/stm32l476rgtx_flash.ld"));
     // elf.setVerboseCC(true);
     // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)

@@ -54,7 +54,7 @@ extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
 
 char* __env[1] = {0};
-//har** environ = __env; //FIXME: Need nano spec?
+char** environ = __env;
 
 /* Functions */
 void initialise_monitor_handles(void)
