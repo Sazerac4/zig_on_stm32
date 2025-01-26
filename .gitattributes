@@ -1,6 +1,12 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-# Consider lirary as binary
+# Consider library as binary
 *.a       binary
 
+# Source: https://medium.com/@mbrehin/git-advanced-diff-odt-pdf-doc-xls-ppt-25afbf4f1105
+*.doc diff=doc
+*.xls diff=xls
+*.ppt diff=ppt
+*.odt diff=odt
+*.pdf diff=pdf
