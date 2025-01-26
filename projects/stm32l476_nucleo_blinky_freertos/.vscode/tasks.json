@@ -4,71 +4,49 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "init-cmake",
+            "label": "♻ Clean",
             "type": "shell",
             "linux": {
-                "command": "cmake --preset=Debug .",
+                "command": "rm -rf -- ./.zig-cache",
             },
             "osx": {
-                "command": "cmake --preset=Debug .",
+                "command": "rm -rf -- ./.zig-cache",
             },
             "windows": {
-                "command": "cmake --preset=Debug .",
+                "command": "Remove-Item -Recurse -Force ./.zig-cache",
             },
             "options": {
                 "cwd": "${workspaceRoot}",
                 "statusbar": {
-                    "hide": true
+                    "hide": false,
+                    "color": "#686aec",
+                    "label": "♻ Clean"
                 }
             },
             "isBackground": true,
             "problemMatcher": [],
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": true,
             }
         },
         {
-            "label": "clean-build",
+            "label": "$(gear) Build",
             "type": "shell",
             "linux": {
-                "command": "cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first",
+                "command": "zig build",
             },
             "osx": {
-                "command": "cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first",
+                "command": "zig build",
             },
             "windows": {
-                "command": "cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first",
+                "command": "zig build",
             },
             "options": {
-                "cwd": "${workspaceRoot}/build/Debug",
-                "statusbar": {
-                    "label": "♻ clean-build"
-                }
-            },
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "build",
-            "type": "shell",
-            "linux": {
-                "command": "cmake --build . -j$(nproc)",
-            },
-            "osx": {
-                "command": "cmake --build . -j$(nproc)",
-            },
-            "windows": {
-                "command": "cmake --build . -j$(nproc)",
-            },
-            "options": {
-                "cwd": "${workspaceRoot}/build/Debug/",
+                "cwd": "${workspaceRoot}",
                 "statusbar": {
                     "color": "#48c548",
-                    "label": "$(gear) build"
+                    "label": "$(gear) Build"
                 }
             },
             "isBackground": true,
@@ -79,22 +57,22 @@
             }
         },
         {
-            "label": "flash",
+            "label": "$(chip) Flash chip",
             "type": "shell",
             "linux": {
-                "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",
+                "command": "zig build flash",
             },
             "osx": {
-                "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",
+                "command": "zig build flash",
             },
             "windows": {
-                "command": "st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex",
+                "command": "zig build flash",
             },
             "options": {
-                "cwd": "${workspaceRoot}/build/Debug",
+                "cwd": "${workspaceRoot}/",
                 "statusbar": {
                     "color": "#dfdc2f",
-                    "label": "$(chip) flash"
+                    "label": "$(chip) Flash chip"
                 }
             },
             "problemMatcher": [],

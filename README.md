@@ -28,6 +28,8 @@ Each example of a C project below has its Zig equivalent ending with `_zig`
 ### Windows
 
 
+### VsCode/VsCodium
+
 ## Build
 
 ### Build

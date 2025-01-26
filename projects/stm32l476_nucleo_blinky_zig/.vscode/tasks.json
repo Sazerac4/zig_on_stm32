@@ -4,33 +4,34 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "clean",
+            "label": "♻ Clean",
             "type": "shell",
             "linux": {
-                "command": "zig build clean",
+                "command": "rm -rf -- ./.zig-cache",
             },
             "osx": {
-                "command": "zig build clean",
+                "command": "rm -rf -- ./.zig-cache",
             },
             "windows": {
-                "command": "zig build clean",
+                "command": "Remove-Item -Recurse -Force ./.zig-cache",
             },
             "options": {
                 "cwd": "${workspaceRoot}",
                 "statusbar": {
-                    "color": "#c56b48",
-                    "label": "$(gear) zig clean"
+                    "hide": false,
+                    "color": "#686aec",
+                    "label": "♻ Clean"
                 }
             },
             "isBackground": true,
             "problemMatcher": [],
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": true,
             }
         },
         {
-            "label": "build",
+            "label": "$(gear) Build",
             "type": "shell",
             "linux": {
                 "command": "zig build",
@@ -45,7 +46,7 @@
                 "cwd": "${workspaceRoot}",
                 "statusbar": {
                     "color": "#48c548",
-                    "label": "$(gear) zig build"
+                    "label": "$(gear) Build"
                 }
             },
             "isBackground": true,
@@ -56,7 +57,7 @@
             }
         },
         {
-            "label": "flash",
+            "label": "$(chip) Flash chip",
             "type": "shell",
             "linux": {
                 "command": "zig build flash",
@@ -71,7 +72,7 @@
                 "cwd": "${workspaceRoot}/",
                 "statusbar": {
                     "color": "#dfdc2f",
-                    "label": "$(chip) zig flash"
+                    "label": "$(chip) Flash chip"
                 }
             },
             "problemMatcher": [],

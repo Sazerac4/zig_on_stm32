@@ -52,19 +52,20 @@
 /* Entry Point */
 ENTRY(Reset_Handler)
 
+
+/* Specify the memory areas */
+MEMORY
+{
+  FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
+  RAM2 (xrw)      : ORIGIN = 0x10000000, LENGTH = 32K
+  RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
+}
+
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
-
-/* Specify the memory areas */
-MEMORY
-{
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
-RAM2 (xrw)      : ORIGIN = 0x10000000, LENGTH = 32K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
-}
 
 /* Define output sections */
 SECTIONS
@@ -103,8 +104,8 @@ SECTIONS
     . = ALIGN(8);
   } >FLASH
 
-  .ARM.extab   : 
-  { 
+  .ARM.extab :
+  {
   . = ALIGN(8);
   *(.ARM.extab* .gnu.linkonce.armextab.*)
   . = ALIGN(8);
@@ -125,7 +126,7 @@ SECTIONS
     PROVIDE_HIDDEN (__preinit_array_end = .);
 	. = ALIGN(8);
   } >FLASH
-  
+
   .init_array :
   {
 	. = ALIGN(8);
@@ -149,7 +150,7 @@ SECTIONS
   _sidata = LOADADDR(.data);
 
   /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  .data :
   {
     . = ALIGN(8);
     _sdata = .;        /* create a global symbol at data start */
@@ -160,7 +161,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
-  
+
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
@@ -178,7 +179,7 @@ SECTIONS
   } >RAM
 
   /* User_heap_stack section, used to check that there is enough RAM left */
-  ._user_heap_stack :
+  ._user_heap_stack (NOLOAD):
   {
     . = ALIGN(8);
     PROVIDE ( end = . );
@@ -188,7 +189,7 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
@@ -198,6 +199,7 @@ SECTIONS
     libgcc.a ( * )
   }
 
+  .ARM.attributes 0 : { *(.ARM.attributes) }
 }
 
 
