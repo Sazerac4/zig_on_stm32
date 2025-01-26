@@ -60,11 +60,8 @@ pub fn build(b: *std.Build) void {
         exe_mod.root_source_file = b.path("src/main.zig");
     }
     //////////////////////////////////////////////////////////////////
-
-    const asm_sources = [_][]const u8{"startup_stm32l476xx.s"};
-    for (asm_sources) |path| {
-        elf.addAssemblyFile(b.path(path));
-    }
+    // Startup file
+    elf.addAssemblyFile(b.path("startup_stm32l476xx.s"));
 
     const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DZIG=" ++ zig_implementation };
 

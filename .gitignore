@@ -1,7 +1,7 @@
 ######################################################################
 # User
 ######################################################################
-#Makefile from CubeMX are not used anymore to compile, use cmake instead
+#Makefile from CubeMX are not used anymore to compile, use zig instead
 Makefile
 *.mk
 
@@ -55,7 +55,6 @@ CMakeUserPresets.json
 
 
 **/.zig-cache/ 
-**/zig-cache/ 
 **/zig-out/
 **/release/
 **/debug/

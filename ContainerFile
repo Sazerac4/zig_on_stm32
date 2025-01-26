@@ -2,8 +2,7 @@ FROM fedora:41
 LABEL description "Build zig examples" \
     maintainer="Sazerac4 <lm-embeddedsystems@laposte.net>"
 
-RUN mkdir -vp /opt/bin && mkdir -vp /opt/softs
-ENV PATH="/opt/bin:${PATH}"
+RUN mkdir -vp /opt/softs && mkdir -vp ~/.local/bin
 
 #Install tools
 RUN yum install -y wget stlink moreutils setserial
@@ -12,13 +11,13 @@ RUN yum install -y wget stlink moreutils setserial
 ARG GCC_VERSION="14.2.1-1.1"
 RUN cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v${GCC_VERSION}/xpack-arm-none-eabi-gcc-${GCC_VERSION}-linux-x64.tar.gz \
     && tar -xf /tmp/xpack-arm-none-eabi-gcc-*-linux-x64.tar.gz -C /opt/softs/ \
-    && ln -s /opt/softs/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  /opt/bin/
+    && ln -s /opt/softs/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install zig
 ARG ZIG_VERSION="0.14.0-dev.2851+b074fb7dd"
 RUN cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/softs/ && \
-    ln -s /opt/softs/zig-linux-x86_64-*/zig /opt/bin/
+    ln -s /opt/softs/zig-linux-x86_64-*/zig ~/.local/bin
 
 #Clean image
 RUN yum clean all && rm -rf -- /var/cache/yum && rm -rf -- /tmp/*

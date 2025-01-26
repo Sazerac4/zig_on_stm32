@@ -4,14 +4,6 @@ Are you considering incorporating Zig code into your embedded development projec
 If so, I'd like to share some demo examples that demonstrate how to  integrate Zig code into your projects.  
 These examples utilize the STM32CubeMX code generator as well as the drivers provided by ST, which are probably already integrated into your projects and which you want to keep.
 
-
-## Example
-
-Each example of a C project below has its Zig equivalent ending with `_zig`
-
-- stm32l476_nucleo_blinky
-- stm32l476_nucleo_blinky_freertos
-
 ## Installation
 
 **tools:**
@@ -30,6 +22,12 @@ Each example of a C project below has its Zig equivalent ending with `_zig`
 ### VsCode/VsCodium
 
 ## Build
+
+Each example of a C project below has its Zig equivalent ending with `_zig`
+
+- stm32l476_nucleo_blinky
+- stm32l476_nucleo_blinky_freertos
+
 
 ### Build
 
