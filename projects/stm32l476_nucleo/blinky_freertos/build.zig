@@ -54,16 +54,16 @@ pub fn build(b: *std.Build) void {
         elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
     }
 
-    var zig_implementation = "0";
-    if (b.option(bool, "ZIG", "Use zig implementation")) |_| {
-        zig_implementation = "1";
+    var zig_implementation_disable = "0";
+    if (b.option(bool, "NO_ZIG", "Use zig implementation")) |_| {} else {
+        zig_implementation_disable = "1";
         exe_mod.root_source_file = b.path("src/main.zig");
     }
     //////////////////////////////////////////////////////////////////
     // Startup file
     elf.addAssemblyFile(b.path("startup_stm32l476xx.s"));
 
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DZIG=" ++ zig_implementation };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DNO_ZIG=" ++ zig_implementation_disable };
 
     const c_sources_drivers = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
