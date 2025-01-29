@@ -4,6 +4,20 @@ Are you considering incorporating Zig code into your embedded development projec
 If so, I'd like to share some demo examples that demonstrate how to  integrate Zig code into your projects.  
 These examples utilize the STM32CubeMX code generator as well as the drivers provided by ST, which are probably already integrated into your projects and which you want to keep.
 
+## Examples List
+
+- Baremetal blinky example with C and Zig implementation 
+- FreeRTOS blinky example with C and Zig implementation 
+
+**Project tree**
+
+```
+projects/
+└── stm32l476_nucleo/
+    ├── blinky/
+    └── blinky_freertos/
+```
+
 ## Installation
 
 **Tools:**
@@ -83,16 +97,6 @@ cd stm32l476_nucleo/blinky
 Remove dangling image if needed : `podman image prune`
 
 ## Build
-
-Each program has a C and Zig implementation in the same project.
-To use the C implementation, type the command: `zig build -DNO_ZIG`
-
-```
-projects/
-└── stm32l476_nucleo/
-    ├── blinky/
-    └── blinky_freertos/
-```
 
 - See the `README.md` for each project for specific options and instructions
 
