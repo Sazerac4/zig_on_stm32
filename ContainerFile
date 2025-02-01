@@ -5,7 +5,7 @@ LABEL description "Build zig examples" \
 RUN mkdir -vp /opt/softs && mkdir -vp ~/.local/bin
 
 #Install tools
-RUN yum install -y wget stlink moreutils setserial
+RUN yum install -y wget cmake make stlink openocd moreutils setserial
 
 #Install gcc
 ARG GCC_VERSION="14.2.1-1.1"

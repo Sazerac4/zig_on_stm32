@@ -6,13 +6,11 @@ const c = @cImport({
     @cInclude("main.h");
 });
 
-export fn zig_entrypoint() void {
+export fn zig_entrypoint() noreturn {
     while (true) {
         c.HAL_GPIO_WritePin(c.LD2_GPIO_Port, c.LD2_Pin, c.GPIO_PIN_RESET);
         c.HAL_Delay(200);
         c.HAL_GPIO_WritePin(c.LD2_GPIO_Port, c.LD2_Pin, c.GPIO_PIN_SET);
         c.HAL_Delay(500);
     }
-
-    unreachable;
 }
