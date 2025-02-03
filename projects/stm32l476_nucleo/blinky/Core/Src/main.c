@@ -44,7 +44,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-#if (NO_ZIG == 1)
+#if defined(NO_ZIG) && (NO_ZIG == 1)
 extern void zig_entrypoint(void);
 #endif
 /* USER CODE END PV */
@@ -91,7 +91,7 @@ int main(void)
     MX_GPIO_Init();
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
-#if (NO_ZIG == 1)
+#if defined(NO_ZIG) && (NO_ZIG == 1)
     zig_entrypoint();
 #endif
     /* USER CODE END 2 */

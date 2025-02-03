@@ -7,6 +7,8 @@ To use the C implementation, type the command: `zig build -DNO_ZIG`
 
 ## Build
 
+### Zig
+
 ```bash
 # Build
 zig build
@@ -14,6 +16,16 @@ zig build
 zig build flash
 # Rmemove .zig-cache folder
 zig build clean
+```
+
+### CMake
+
+```bash
+rm -rf -- build/Debug/* && cmake --preset=Debug .
+cd build/Debug
+cmake --build . --target 'rebuild_cache' &&  cmake --build . -j$(nproc) --clean-first
+# Flash
+st-flash --connect-under-reset --freq=4000k --format=ihex write ./*.hex
 ```
 
 ## Options
