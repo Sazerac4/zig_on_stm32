@@ -1,9 +1,7 @@
-#include <stdint.h>
-
 /*----------------------------------------------------------------------------
   Linker generated Symbols
  *----------------------------------------------------------------------------*/
-extern uint32_t __stack;
+extern char __stack[];
 
 /*----------------------------------------------------------------------------
   Exception / Interrupt Handler Function Prototype
@@ -122,7 +120,7 @@ void FPU_IRQHandler(void) __attribute__((weak, alias("Default_Handler")));
  *----------------------------------------------------------------------------*/
 const pFunc __interrupt_vector[] __attribute__((section(".text.init.enter"))) = {
     /* Cortex-M4 Exceptions Handler */
-    (pFunc)((uint32_t)&__stack), /*      Initial Stack Pointer     */
+    (pFunc)(__stack),             /*      Initial Stack Pointer     */
     _start,                      /* picolibc start function */
     NMI_Handler,
     HardFault_Handler,

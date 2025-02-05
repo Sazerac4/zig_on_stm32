@@ -29,8 +29,6 @@ PHDRS
 SECTIONS
 {
   .ram2 (NOLOAD) : {
-        /* Align the heap */
-        . = ALIGN(8);
         __ram2_end = .;
   } >ram2 AT>ram2 :ram2
   PROVIDE( __ram2_start = ADDR(.ram2));

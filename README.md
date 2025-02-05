@@ -15,6 +15,7 @@ These examples utilize the STM32CubeMX code generator as well as the drivers pro
 projects/
 └── stm32l476_nucleo/
     ├── blinky/
+    ├── blinky_picolibc/
     └── blinky_freertos/
 ```
 
@@ -22,12 +23,17 @@ projects/
 
 **Tools:**
 
-- zig : `0.14.0` minimum
-- STM32CubeMX : `6.13.0` minimum
-- arm-none-eabi-gcc : `14.2.1` used
-- stlink-tools : `v1.8.0` used
-- openocd : `v0.12.0` used
-- cmake : `3.30.5` used
+| Name              | Version   | Description                                                             |
+| :---------------- | --------- | :---------------------------------------------------------------------- |
+| Zig               | `0.14.0`  | for compiling C and Zig code                                            |
+| Arm GNU Toolchain | `14.2.1`  | to provide the libc (newlib) needed by C source code                    |
+| ST link           | `v1.8.0`  | for flashing firmware                                                   |
+| OpenOCD           | `v0.12.0` | to provide debugging                                                    |
+| CMake             | `3.30.5`  | for build automation                                                    |
+| STM32CubeMX       | `6.13.0`  | for the generation of the corresponding initialization C code for STM32 |
+
+
+Some of theses tools are downloaded from the [xPack Binary Development Tools](https://xpack-dev-tools.github.io/) project.
 
 ### Linux
 
@@ -40,7 +46,7 @@ apt install cmake make wget stlink-tools openocd xz-utils
 #Create folder softs
 mkdir -vp /opt/softs
 
-#Install arm-none-eabi-gcc
+#Install arm-none-eabi-gcc (xpack version)
 GCC_VERSION="14.2.1-1.1"
 cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v${GCC_VERSION}/xpack-arm-none-eabi-gcc-${GCC_VERSION}-linux-x64.tar.gz \
     && tar -xf /tmp/xpack-arm-none-eabi-gcc-*-linux-x64.tar.gz -C /opt/softs/ \
@@ -90,6 +96,8 @@ You need to choice between System wide or User level. Example below work if you 
 
 ### Containers (Podman or Docker)
 
+Instead of installing the various tools separately, you can install Docker or Podman and build/flash the firmware directly from the container.
+
 ```bash
 #Create the image
 podman build -f ContainerFile --tag=zig_on_stm32:0.14.0 .
@@ -104,25 +112,30 @@ Remove dangling image if needed : `podman image prune`
 ### Vs Code / Vs Codium
 
 For `Vs Code` User, all project got à `.vscode` folder with à `launch.json` for debugging and à `tasks.json` to build and upload the firmware.
-
 You can download theses extensions:
 
 - `marus25.cortex-debug` for debugging ARM Cortex-M targets.
 
-
 (image)
-
 
 - `actboy168.tasks` to got quick shortcut of your tasks in your status bar
 
+(image)
+
+## SVD Files
+
+The CMSIS System View Description format(CMSIS-SVD) formalizes the description of the system contained in Arm Cortex-M processor-based microcontrollers, in particular, the memory mapped registers of peripherals.
+
+- You can use [regz](https://github.com/ZigEmbeddedGroup/microzig/tree/main/tools/regz) to generate `registers` code.
+- You can use it with VS Code in debugging mode
 
 (image)
 
+You can found stm32 svd files [here](https://github.com/modm-io/cmsis-svd-stm32)
 
 ## Build
 
 - See the `README.md` for each project for specific options and instructions
-
 
 ## Debugging CLI
 
@@ -143,6 +156,26 @@ You can flash the firmware inside gdb with:
 ```bash
 load
 ```
+
+## Linker Note
+
+- We need to move the declaration for `_estack` to after the region `RAM` is defined. 
+- The section `_user_heap_stack` is in RAM (and thus wont' be flashed to the device), so it really should be marked with `(NOLOAD)` like so:
+
+```ld
+/* User_heap_stack section, used to check that there is enough RAM left */
+  ._user_heap_stack (NOLOAD) :
+  {
+    . = ALIGN(8);
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+    . = ALIGN(8);
+  } >RAM
+```
+
+More details with this [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide/tree/main/02_drop_in_compiler#modifying-our-linker-script)
 
 ## Reference:
 

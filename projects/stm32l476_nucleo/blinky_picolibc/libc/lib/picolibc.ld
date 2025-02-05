@@ -175,7 +175,10 @@ SECTIONS
 		PROVIDE(__preserve_end__ = .);
 	} >ram AT>ram :ram
 
-	.data :  /*ALIGN_WITH_INPUT*/  {
+	.data : {
+        /* Align the section start .data */
+        . = ALIGN(8);
+
 		*(.data .data.*)
 		*(.gnu.linkonce.d.*)
 
@@ -202,7 +205,7 @@ SECTIONS
 	 * as it only guarantees usage as a TLS template works
 	 * rather than supporting this use case.
 	 */
-	.tdata : /* For ld.lld:  ALIGN(__tls_align) */  /*ALIGN_WITH_INPUT*/  {
+	.tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN(__tls_align)  {
 		*(.tdata .tdata.* .gnu.linkonce.td.*)
 		PROVIDE(__data_end = .);
 		PROVIDE(__tdata_end = .);
