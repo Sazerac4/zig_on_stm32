@@ -23,6 +23,8 @@
 /* Includes */
 #include <errno.h>
 #include <stdint.h>
+//
+#include <stddef.h>
 
 void *_sbrk(ptrdiff_t incr);
 /**

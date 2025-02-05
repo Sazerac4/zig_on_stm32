@@ -20,6 +20,8 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
+#include <stdio.h>
+#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -68,6 +70,9 @@ int main(void)
 {
 
     /* USER CODE BEGIN 1 */
+    char volatile test_libc[40];
+    float volatile a = sin(55);
+    snprintf(test_libc, sizeof(test_libc), "%f",a);
 
     /* USER CODE END 1 */
 
