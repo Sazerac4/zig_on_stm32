@@ -14,7 +14,7 @@ RUN cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/r
     && ln -s /opt/softs/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install zig
-ARG ZIG_VERSION="0.14.0-dev.2851+b074fb7dd"
+ARG ZIG_VERSION="0.14.0-dev.3046+08d661fcf"
 RUN cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/softs/ && \
     ln -s /opt/softs/zig-linux-x86_64-*/zig ~/.local/bin

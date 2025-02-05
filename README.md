@@ -1,3 +1,18 @@
+
+- [Context](#context)
+- [Examples List](#examples-list)
+- [Installation](#installation)
+  - [Linux](#linux)
+  - [Windows](#windows)
+  - [Containers (Podman or Docker)](#containers-podman-or-docker)
+  - [Vs Code / Vs Codium](#vs-code--vs-codium)
+- [SVD Files](#svd-files)
+- [Build](#build)
+- [Debugging CLI](#debugging-cli)
+- [Linker Note](#linker-note)
+- [Reference:](#reference)
+
+
 ## Context
 
 Are you considering incorporating Zig code into your embedded development projects, specifically on STM32 or other similar platforms?  
@@ -53,7 +68,7 @@ cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/relea
     && ln -s /opt/softs/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install zig
-ZIG_VERSION="0.14.0-dev.2851+b074fb7dd"
+ZIG_VERSION="0.14.0-dev.3046+08d661fcf"
 cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/softs/ && \
     ln -s /opt/softs/zig-linux-x86_64-*/zig ~/.local/bin
@@ -62,7 +77,7 @@ cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.x
 ### Windows
 
 1. Create a `softs` folder (example : `C:\softs` )
-2. Download [zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0-dev.2851+b074fb7dd.zip)
+2. Download [zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0-dev.3046+08d661fcf.zip)
 3. Download [arm-none-eabi-gcc](https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/tag/v14.2.1-1.1)
 4. Download [stlink](https://github.com/stlink-org/stlink/releases/tag/v1.8.0)
 5. Download [openocd](https://github.com/xpack-dev-tools/openocd-xpack/releases/tag/v0.12.0-4)
@@ -89,7 +104,7 @@ You need to choice between System wide or User level. Example below work if you 
 ```powershell
 [Environment]::SetEnvironmentVariable(
    "Path",
-   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\softs\stlink-1.8.0-win32\bin;C:\softs\zig-windows-x86_64-0.14.0-dev.2851+b074fb7dd;C:\softs\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\softs\xpack-openocd-0.12.0-4\bin",
+   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\softs\stlink-1.8.0-win32\bin;C:\softs\zig-windows-x86_64-0.14.0-dev.3046+08d661fcf;C:\softs\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\softs\xpack-openocd-0.12.0-4\bin",
    "User"
 )
 ```

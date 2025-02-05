@@ -127,7 +127,7 @@ pub fn build(b: *std.Build) void {
     elf.addLibraryPath(.{ .cwd_relative = picolib_lib_path1 });
     elf.addSystemIncludePath(.{ .cwd_relative = "libc/include" });
     elf.linkSystemLibrary("c_pico");
-    elf.linkSystemLibrary("crt0-minimal");
+    elf.linkSystemLibrary("crt0");
     elf.linkSystemLibrary("m");
 
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));

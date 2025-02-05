@@ -12,7 +12,6 @@ typedef void (*pFunc)(void);
   External References
  *----------------------------------------------------------------------------*/
 extern void _start(void);
-extern void SystemInit(void); /* CMSIS System Initialization      */
 
 /*----------------------------------------------------------------------------
   Internal References

@@ -20,12 +20,13 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
-#include <stdio.h>
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +47,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern void zig_entrypoint(void);
+char  memory2_area[53]  __attribute__((section(".ram2"))); //For linker and libc test
+extern char __ram2_start[];
+extern char __ram2_end[];
+extern char __ram2_size[];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,21 +62,40 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-    char volatile test_libc[40]  __attribute__((section(".ram2")));
+extern void zig_entrypoint(void);
+extern void SystemInit(void);
+
+
+//Picolibc will call _init before entering in main
+#ifdef _HAVE_INIT_FINI
+//FIXME: If you use crt0-minimal.o, this function will not be called.
+void _init(void)
+{
+    // CMSIS System Initialization
+    SystemInit();
+    // Initialize to 0 the second ram memory area
+    memset(__ram2_start, '\0', (uintptr_t) __ram2_size);
+}
+#else
+#warning "CMSIS System Initialization will not be called"
+#endif
 /* USER CODE END 0 */
 
 /**
  * @brief  The application entry point.
  * @retval int
  */
-int main(int argc, char *argv[])
+int main(void)
 {
-    (void)argc;
-    (void)argv;
     /* USER CODE BEGIN 1 */
 
-    float volatile a = sin(55);
-    snprintf(test_libc, sizeof(test_libc), "%f",a);
+    //math test
+    volatile float  a = sinf(55);
+    volatile double b = sin(55);
+
+
+    //Printf test
+    snprintf(memory2_area, sizeof(memory2_area), "%f,%f",a,b);
 
     /* USER CODE END 1 */
 

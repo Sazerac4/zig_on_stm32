@@ -128,7 +128,7 @@ cp libc/lib/thumb/v7e-m+fp/hard/libc.a libc/lib/thumb/v7e-m+fp/hard/libc_pico.a
 
 Then, change `elf.linkSystemLibrary("c");` to `elf.linkSystemLibrary("c_pico");`.
 
-Now it is compile, however zig code will not benefit of libc implementation.
+Now it is compile, however zig code will not benefit of libc implementation, only the `C` sources files.
 
 ---
 
@@ -139,31 +139,31 @@ Picolibc provides two linker script `picolibc.ld` and `picolibcpp.ld` that is us
 1. Replace section `.data`
 
 ```
-	.data :  ALIGN_WITH_INPUT  {
-		*(.data .data.*)
-		*(.gnu.linkonce.d.*)
+    .data :  ALIGN_WITH_INPUT  {
+        *(.data .data.*)
+        *(.gnu.linkonce.d.*)
 ```
 
 by 
 
 ```
-	.data : {
+    .data : {
         /* Align the section start .data */
         . = ALIGN(8);
 
-		*(.data .data.*)
-		*(.gnu.linkonce.d.*)
+        *(.data .data.*)
+        *(.gnu.linkonce.d.*)
 ```
 
 2.  Replace section `.tdata`
 
 ```ld
-	.tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN_WITH_INPUT  {
+    .tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN_WITH_INPUT  {
 ```
 by 
 
 ```ld
-	.tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN(__tls_align)  {
+    .tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN(__tls_align)  {
 ```
 
 I use `picolibc.ld` linker script for this program, see `stm32l476rgtx_flash.ld`

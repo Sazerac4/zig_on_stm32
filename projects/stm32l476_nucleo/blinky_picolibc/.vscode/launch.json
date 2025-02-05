@@ -8,7 +8,7 @@
             "request": "attach",
             "type": "cortex-debug",
             "servertype": "openocd",
-            "runToEntryPoint": "main",
+            "runToEntryPoint": "_start",
             "gdbPath": "arm-none-eabi-gdb",
             "device": "STM32L476RG",
             "configFiles": [
@@ -28,7 +28,7 @@
             "executable": "${workspaceFolder}/zig-out/bin/blinky.elf",
             "request": "launch",
             "type": "cortex-debug",
-            "runToEntryPoint": "main",
+            "runToEntryPoint": "_start",
             "servertype": "openocd",
             "gdbPath": "arm-none-eabi-gdb",
             "device": "STM32L476RG",

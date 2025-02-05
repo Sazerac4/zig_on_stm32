@@ -14,6 +14,7 @@ __ram = 0x20000000;
 __ram_size = 96K;
 __stack_size = 512;
 
+/* Provide the second memory area for user application */
 MEMORY
 {
 	ram2 (w!rx) :
@@ -29,10 +30,14 @@ PHDRS
 SECTIONS
 {
   .ram2 (NOLOAD) : {
+        *(.ram2)
+        *(.ram2*)
+        . = ALIGN(4);
         __ram2_end = .;
   } >ram2 AT>ram2 :ram2
   PROVIDE( __ram2_start = ADDR(.ram2));
   PROVIDE( __ram2_size = __ram2_end - __ram2_start );
+
 }
 
 INCLUDE libc/lib/picolibc.ld
