@@ -99,6 +99,7 @@ meson setup --cross-file ../scripts/cross-arm-none-eabi.txt \
     -Dpicocrt=true \
     -Dnewlib-global-atexit=true  \
     -Dnewlib-multithread=false \
+    -Dformat-default=minimal \
     -Dmultilib=false \
     -Dmultilib-list=thumb/v7e-m+fp/hard \
     ../
@@ -123,7 +124,7 @@ However, there is a workaround: you can rename the libc library and link it manu
 
 For example:
 ```bash
-cp libc/lib/thumb/v7e-m+fp/hard/libc.a libc/lib/thumb/v7e-m+fp/hard/libc_pico.a
+cp libc/lib/libc.a libc/lib/libc_pico.a
 ```
 
 Then, change `elf.linkSystemLibrary("c");` to `elf.linkSystemLibrary("c_pico");`.

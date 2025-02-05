@@ -43,11 +43,11 @@ ENTRY(_start)
 MEMORY
 {
 	flash (rx!w) :
-		ORIGIN = DEFINED(__flash) ? __flash : 0x00000000,
-		LENGTH = DEFINED(__flash_size) ? __flash_size : 0x00400000
+		ORIGIN = DEFINED(__flash) ? __flash : 0x08000000,
+		LENGTH = DEFINED(__flash_size) ? __flash_size : 0x00100000
 	ram (w!rx) :
 		ORIGIN = DEFINED(__ram) ? __ram : 0x20000000,
-		LENGTH = DEFINED(__ram_size) ? __ram_size : 0x00200000
+		LENGTH = DEFINED(__ram_size) ? __ram_size : 0x00018000
 }
 
 PHDRS
@@ -55,8 +55,7 @@ PHDRS
 	text PT_LOAD;
 	ram_init PT_LOAD;
 	ram PT_LOAD;
-	tls_init PT_TLS;
-        tls PT_TLS;
+	tls PT_TLS;
 }
 
 SECTIONS
@@ -175,7 +174,7 @@ SECTIONS
 		PROVIDE(__preserve_end__ = .);
 	} >ram AT>ram :ram
 
-	.data :  ALIGN_WITH_INPUT  {
+	.data : /* For ld.bfd:  ALIGN_WITH_INPUT */ {
 		*(.data .data.*)
 		*(.gnu.linkonce.d.*)
 
@@ -202,11 +201,11 @@ SECTIONS
 	 * as it only guarantees usage as a TLS template works
 	 * rather than supporting this use case.
 	 */
-	.tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN_WITH_INPUT  {
+	.tdata :  ALIGN(__tls_align)  /* For ld.bfd:  ALIGN_WITH_INPUT */ {
 		*(.tdata .tdata.* .gnu.linkonce.td.*)
 		PROVIDE(__data_end = .);
 		PROVIDE(__tdata_end = .);
-	} >ram AT>flash :tls_init :ram_init
+	} >ram AT>flash :tls :ram_init
 	PROVIDE( __tls_base = ADDR(.tdata));
 	PROVIDE( __tdata_start = ADDR(.tdata));
 	PROVIDE( __tdata_source = LOADADDR(.tdata) );
@@ -242,12 +241,12 @@ SECTIONS
 	 * it for the initial TLS storage.
 	 * Create special section here just to make room.
 	 */
-        
+        /* For ld.bfd: 
         .tbss_space (NOLOAD) : {
 		. = ADDR(.tbss);
 		. = . + SIZEOF(.tbss);
 	} >ram AT>ram :ram
-	
+	*/
 	.bss (NOLOAD) : {
 		*(.sbss*)
 		*(.gnu.linkonce.sb.*)

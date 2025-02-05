@@ -18,10 +18,10 @@
 #undef NEWLIB_GLOBAL_ERRNO
 
 /* use thread local storage */
-#undef NEWLIB_TLS
+#define NEWLIB_TLS
 
 /* use thread local storage */
-#undef PICOLIBC_TLS
+#define PICOLIBC_TLS
 
 /* Use open/close/read/write in tinystdio */
 #define POSIX_IO
@@ -108,7 +108,7 @@
 #define _HAVE_BUILTIN_FFSLL
 
 /* The compiler supports __builtin_finitel */
-#define _HAVE_BUILTIN_FINITEL
+#undef _HAVE_BUILTIN_FINITEL
 
 /* The compiler supports __builtin_isfinite */
 #define _HAVE_BUILTIN_ISFINITE
@@ -117,13 +117,13 @@
 #define _HAVE_BUILTIN_ISINF
 
 /* The compiler supports __builtin_isinfl */
-#define _HAVE_BUILTIN_ISINFL
+#undef _HAVE_BUILTIN_ISINFL
 
 /* The compiler supports __builtin_isnan */
 #define _HAVE_BUILTIN_ISNAN
 
 /* The compiler supports __builtin_isnanl */
-#define _HAVE_BUILTIN_ISNANL
+#undef _HAVE_BUILTIN_ISNANL
 
 /* The compiler supports __builtin_issignalingl */
 #undef _HAVE_BUILTIN_ISSIGNALINGL
@@ -132,7 +132,7 @@
 #define _HAVE_BUILTIN_MUL_OVERFLOW
 
 /* Compiler flag to prevent detecting memcpy/memset patterns */
-#define _HAVE_CC_INHIBIT_LOOP_TO_LIBCALL
+#undef _HAVE_CC_INHIBIT_LOOP_TO_LIBCALL
 
 /* Compiler supports _Complex */
 #define _HAVE_COMPLEX
@@ -154,10 +154,10 @@
 #define _HAVE_LONG_DOUBLE
 
 /* Compiler attribute to prevent the optimizer from adding new builtin calls */
-#undef _HAVE_NO_BUILTIN_ATTRIBUTE
+#define _HAVE_NO_BUILTIN_ATTRIBUTE
 
 /* _set_tls and _init_tls functions available */
-#undef _HAVE_PICOLIBC_TLS_API
+#define _HAVE_PICOLIBC_TLS_API
 
 /* Use Raspberry Pi RP2040 CPUID register to index thread local storage value */
 #undef _HAVE_PICOLIBC_TLS_RP2040
@@ -410,7 +410,7 @@
 
 #define _REENT_GLOBAL_ATEXIT
 
-#undef _RETARGETABLE_LOCKING
+#define _RETARGETABLE_LOCKING
 
 #undef _UNBUF_STREAM_OPT
 
@@ -481,5 +481,5 @@
 /* The Picolibc major version number. */
 #define __PICOLIBC__ 1
 
-#define __SINGLE_THREAD__
+#undef __SINGLE_THREAD__
 

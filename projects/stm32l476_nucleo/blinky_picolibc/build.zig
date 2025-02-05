@@ -2,8 +2,6 @@ const builtin = @import("builtin");
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-
-    //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
     const executable_name = "blinky";
     // Target
     const query: std.Target.Query = .{
@@ -21,6 +19,7 @@ pub fn build(b: *std.Build) void {
     const opti = b.standardOptimizeOption(.{});
 
     const exe_mod = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = opti,
         .link_libc = false,
@@ -35,33 +34,6 @@ pub fn build(b: *std.Build) void {
     });
 
     //////////////////////////////////////////////////////////////////
-    // User Options
-    // Try to find arm-none-eabi-gcc program at a user specified path, or PATH variable if none provided
-    // const arm_gcc_pgm = if (b.option([]const u8, "ARM_GCC_PATH", "Path to arm-none-eabi-gcc compiler")) |arm_gcc_path|
-    //     b.findProgram(&.{"arm-none-eabi-gcc"}, &.{arm_gcc_path}) catch {
-    //         std.log.err("Couldn't find arm-none-eabi-gcc at provided path: {s}\n", .{arm_gcc_path});
-    //         unreachable;
-    //     }
-    // else
-    //     b.findProgram(&.{"arm-none-eabi-gcc"}, &.{}) catch {
-    //         std.log.err("Couldn't find arm-none-eabi-gcc in PATH, try manually providing the path to this executable with -Darmgcc=[path]\n", .{});
-    //         unreachable;
-    //     };
-
-    // Allow user to enable float formatting in newlib (printf, sprintf, ...)
-    if (b.option(bool, "NEWLIB_PRINTF_FLOAT", "Force newlib to include float support for printf()")) |_| {
-        elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
-    }
-
-    var zig_implementation_disable = "0";
-    if (b.option(bool, "NO_ZIG", "Use zig implementation")) |_| {} else {
-        zig_implementation_disable = "1";
-        exe_mod.root_source_file = b.path("src/main.zig");
-    }
-    //////////////////////////////////////////////////////////////////
-
-    const asm_sources = [_][]const u8{};
-
     const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
     const c_sources_drivers = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
@@ -84,12 +56,9 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DNO_ZIG=" ++ zig_implementation_disable };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
     //////////////////////////////////////////////////////////////////
-    for (asm_sources) |path| {
-        elf.addAssemblyFile(b.path(path));
-    }
     for (c_includes) |path| {
         elf.addIncludePath(b.path(path));
     }
@@ -122,7 +91,7 @@ pub fn build(b: *std.Build) void {
     }
 
     //////////////////////////////////////////////////////////////////
-    const picolib_lib_path1 = "libc/lib/thumb/v7e-m+fp/hard/";
+    const picolib_lib_path1 = "libc/lib/";
 
     elf.addLibraryPath(.{ .cwd_relative = picolib_lib_path1 });
     elf.addSystemIncludePath(.{ .cwd_relative = "libc/include" });
@@ -131,8 +100,6 @@ pub fn build(b: *std.Build) void {
     elf.linkSystemLibrary("m");
 
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));
-    // elf.setVerboseCC(true);
-    // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "_start" }; // Set Entry Point of the firmware (Already set in the linker script)
 
     //////////////////////////////////////////////////////////////////
