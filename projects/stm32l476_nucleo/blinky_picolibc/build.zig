@@ -77,8 +77,6 @@ pub fn build(b: *std.Build) void {
         "Core/Src/stm32l4xx_it.c",
         "Core/Src/stm32l4xx_hal_msp.c",
         "Core/Src/system_stm32l4xx.c",
-        "Core/Src/sysmem.c",
-        "Core/Src/syscalls.c",
     };
     elf.addCSourceFiles(.{
         .files = &c_sources_core,

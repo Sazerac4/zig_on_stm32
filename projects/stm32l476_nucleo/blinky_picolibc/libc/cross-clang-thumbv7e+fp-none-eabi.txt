@@ -1,17 +1,12 @@
-# Meson settings to compile with clang-18.
+# Meson settings to compile with clang.
+
 [binaries]
-# Meson 0.53.2 doesn't use any cflags when doing basic compiler tests,
-# so we have to add -nostdlib to the compiler configuration itself or
-# early compiler tests will fail. This can be removed when picolibc
-# requires at least version 0.54.2 of meson.
-c = ['clang-18', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
-cpp = ['clang-18', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
-ar = 'arm-none-eabi-ar'
-as = ['clang-18', '-S', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
-nm = 'arm-none-eab-nm'
-strip = 'arm-none-eabi-strip'
-# only needed to run tests
-exe_wrapper = ['sh', '-c', 'test -z "$PICOLIBC_TEST" || run-arm "$@"', 'run-arm']
+c = ['clang-19', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
+cpp = ['clang-19', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
+as = ['clang-19', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
+ar = 'llvm-ar-19'
+nm = 'llvm-nm-19'
+strip = 'llvm-strip-19'
 
 [host_machine]
 system = 'none'
@@ -19,9 +14,8 @@ cpu_family = 'arm'
 cpu = 'arm'
 endian = 'little'
 
-
 [built-in options]
-c_args = ['-Werror=double-promotion', '-Wno-unsupported-floating-point-opt', '-fshort-enums']
+c_args = [ '-Werror=double-promotion', '-Wno-unsupported-floating-point-opt', '-fshort-enums']
 c_link_args = [ '-Wl,-z,noexecstack', '-Wno-unused-command-line-argument']
 cpp_link_args = [ '-Wl,-z,noexecstack', '-Wno-unused-command-line-argument']
 

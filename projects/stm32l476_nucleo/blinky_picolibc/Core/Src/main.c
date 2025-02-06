@@ -47,7 +47,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-char  memory2_area[53]  __attribute__((section(".ram2"))); //For linker and libc test
+char memory2_area[53] __attribute__((section(".ram2"))); // For linker and libc test
 extern char __ram2_start[];
 extern char __ram2_end[];
 extern char __ram2_size[];
@@ -65,16 +65,15 @@ void SystemClock_Config(void);
 extern void zig_entrypoint(void);
 extern void SystemInit(void);
 
-
-//Picolibc will call _init before entering in main
+// Picolibc will call _init before entering in main
 #ifdef _HAVE_INIT_FINI
-//FIXME: If you use crt0-minimal.o, this function will not be called.
+// FIXME: If you use crt0-minimal.o, this function will not be called.
 void _init(void)
 {
     // CMSIS System Initialization
     SystemInit();
     // Initialize to 0 the second ram memory area
-    memset(__ram2_start, '\0', (uintptr_t) __ram2_size);
+    memset(__ram2_start, '\0', (uintptr_t)__ram2_size);
 }
 #else
 #warning "CMSIS System Initialization will not be called"
@@ -89,13 +88,12 @@ int main(void)
 {
     /* USER CODE BEGIN 1 */
 
-    //math test
-    volatile float  a = sinf(55);
+    // math test
+    volatile float a  = sinf(55);
     volatile double b = sin(55);
 
-
-    //Printf test
-    snprintf(memory2_area, sizeof(memory2_area), "%f,%f",a,b);
+    // Formatting test
+    snprintf(memory2_area, sizeof(memory2_area), "%f,%f", a, b);
 
     /* USER CODE END 1 */
 

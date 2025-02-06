@@ -32,8 +32,6 @@ blinky_picolibc/
 │       ├── main.c
 │       ├── stm32l4xx_hal_msp.c
 │       ├── stm32l4xx_it.c
-│       ├── syscalls.c
-│       ├── sysmem.c
 │       ├── system_stm32l4xx.c
 │       ├── usart.c
 │       └── vector_table.c
@@ -41,9 +39,6 @@ blinky_picolibc/
 ├── libc
 │   ├── include
 │   └── lib
-│       ├── thumb
-│       │   └── v7e-m+fp
-│       │       └── hard
 │       ├── picolibc.ld
 │       └── picolibcpp.ld
 ├── src
@@ -69,9 +64,9 @@ Linux
 
 ```bash
 #Install needed tool (fedora)
-sudo yum install meson ninja
+sudo yum install meson ninja llvm-19 clang-19 lld-19
 #Install needed tool (debian)
-sudo apt install meson ninja
+sudo apt install meson ninja-build llvm-19 clang-19 lld-19
 ```
 Windows
 
@@ -82,29 +77,30 @@ Windows
 
 ### Build and installation
 
-```bash
-git clone https://github.com/picolibc/picolibc.git
-cd picolibc
-git checkout 1.8.8-1
-mkdir build && cd build
-```
+### Build with container
 
 ```bash
-#Set yout project path
-PROJECT_WORKSPACE=<your absolute workspace path>
-
-meson setup --cross-file ../scripts/cross-arm-none-eabi.txt \
-    --prefix=${PROJECT_WORKSPACE}/libc \
+# Create the image
+podman build -f ContainerFile --tag=picolibc .
+# Run a container
+podman run --rm -it --privileged -v ./:/workspace --name=picolibc picolibc
+# Configure
+mkdir -p build/picolib && cd build/picolib
+meson setup --cross-file /workspace/libc/cross-clang-thumbv7e+fp-none-eabi.txt \
+    --prefix=/workspace/libc \
     -Dtests=false \
     -Dpicocrt=true \
     -Dnewlib-global-atexit=true  \
-    -Dnewlib-multithread=false \
+    -Dnewlib-retargetable-locking=true \
+    -Dnewlib-multithread=true \
     -Dformat-default=minimal \
     -Dmultilib=false \
     -Dmultilib-list=thumb/v7e-m+fp/hard \
-    ../
-
+    /picolibc/
+# Install
 ninja install
+# The following line is explained below
+cp /workspace/libc/lib/libc.a /workspace/libc/lib/libc_pico.a
 ```
 
 ---
@@ -135,44 +131,12 @@ Now it is compile, however zig code will not benefit of libc implementation, onl
 
 ### Modifying the Picolibc Linker Script
 
-Picolibc provides two linker script `picolibc.ld` and `picolibcpp.ld` that is used during the linking process. To use it with Zig's linker (`lld`), you need to change the unsupported instruction `ALIGN_WITH_INPUT`:
-
-1. Replace section `.data`
-
-```
-    .data :  ALIGN_WITH_INPUT  {
-        *(.data .data.*)
-        *(.gnu.linkonce.d.*)
-```
-
-by 
-
-```
-    .data : {
-        /* Align the section start .data */
-        . = ALIGN(8);
-
-        *(.data .data.*)
-        *(.gnu.linkonce.d.*)
-```
-
-2.  Replace section `.tdata`
-
-```ld
-    .tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN_WITH_INPUT  {
-```
-by 
-
-```ld
-    .tdata : /* For ld.lld:  ALIGN(__tls_align) */  ALIGN(__tls_align)  {
-```
-
-I use `picolibc.ld` linker script for this program, see `stm32l476rgtx_flash.ld`
-
+Picolibc provides two linker script `picolibc.ld` and `picolibcpp.ld` that is used during the linking process. You can use it with Zig's linker (`lld`) without modification because
+we have build picolibc with clang/lld.
 
 ### Replace the linker script from STM32CubeMX
 
-See the new linker script `stm32l476rgtx_flash.ld`
+Specific linker script now can just specify flash memory option, extra section and so on. See the new linker script `stm32l476rgtx_flash.ld`
 
 ### Replace the startup code
 

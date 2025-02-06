@@ -119,8 +119,8 @@ void FPU_IRQHandler(void) __attribute__((weak, alias("Default_Handler")));
  *----------------------------------------------------------------------------*/
 const pFunc __interrupt_vector[] __attribute__((section(".text.init.enter"))) = {
     /* Cortex-M4 Exceptions Handler */
-    (pFunc)(__stack),             /*      Initial Stack Pointer     */
-    _start,                      /* picolibc start function */
+    (pFunc)(__stack), /*      Initial Stack Pointer     */
+    _start,           /* picolibc start function */
     NMI_Handler,
     HardFault_Handler,
     MemManage_Handler,
