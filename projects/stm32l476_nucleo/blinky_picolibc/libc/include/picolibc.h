@@ -50,6 +50,9 @@
 /* The default printf functions is the integer variant */
 #undef _FORMAT_DEFAULT_INTEGER
 
+/* The default printf functions is the long-long variant */
+#undef _FORMAT_DEFAULT_LONG_LONG
+
 /* The default printf functions is the minimal variant */
 #define _FORMAT_DEFAULT_MINIMAL
 
@@ -61,6 +64,9 @@
 
 /* The compiler REALLY has the attribute __alloc_size__ */
 #define _HAVE_ALLOC_SIZE
+
+/* ARM Semihost APIs supported */
+#define _HAVE_ARM_SEMIHOST
 
 /* The compiler supports the always_inline function attribute */
 #define _HAVE_ATTRIBUTE_ALWAYS_INLINE
@@ -167,208 +173,6 @@
 
 #define _HAVE_WEAK_ATTRIBUTE
 
-#undef _ICONV_ENABLE_EXTERNAL_CCS
-
-#define _ICONV_FROM_ENCODING_BIG5
-
-#define _ICONV_FROM_ENCODING_CP775
-
-#define _ICONV_FROM_ENCODING_CP850
-
-#define _ICONV_FROM_ENCODING_CP852
-
-#define _ICONV_FROM_ENCODING_CP855
-
-#define _ICONV_FROM_ENCODING_CP866
-
-#define _ICONV_FROM_ENCODING_EUC_JP
-
-#define _ICONV_FROM_ENCODING_EUC_KR
-
-#define _ICONV_FROM_ENCODING_EUC_TW
-
-#define _ICONV_FROM_ENCODING_ISO_8859_1
-
-#define _ICONV_FROM_ENCODING_ISO_8859_10
-
-#define _ICONV_FROM_ENCODING_ISO_8859_11
-
-#define _ICONV_FROM_ENCODING_ISO_8859_13
-
-#define _ICONV_FROM_ENCODING_ISO_8859_14
-
-#define _ICONV_FROM_ENCODING_ISO_8859_15
-
-#define _ICONV_FROM_ENCODING_ISO_8859_2
-
-#define _ICONV_FROM_ENCODING_ISO_8859_3
-
-#define _ICONV_FROM_ENCODING_ISO_8859_4
-
-#define _ICONV_FROM_ENCODING_ISO_8859_5
-
-#define _ICONV_FROM_ENCODING_ISO_8859_6
-
-#define _ICONV_FROM_ENCODING_ISO_8859_7
-
-#define _ICONV_FROM_ENCODING_ISO_8859_8
-
-#define _ICONV_FROM_ENCODING_ISO_8859_9
-
-#define _ICONV_FROM_ENCODING_ISO_IR_111
-
-#define _ICONV_FROM_ENCODING_KOI8_R
-
-#define _ICONV_FROM_ENCODING_KOI8_RU
-
-#define _ICONV_FROM_ENCODING_KOI8_U
-
-#define _ICONV_FROM_ENCODING_KOI8_UNI
-
-#define _ICONV_FROM_ENCODING_UCS_2
-
-#define _ICONV_FROM_ENCODING_UCS_2BE
-
-#define _ICONV_FROM_ENCODING_UCS_2LE
-
-#define _ICONV_FROM_ENCODING_UCS_2_INTERNAL
-
-#define _ICONV_FROM_ENCODING_UCS_4
-
-#define _ICONV_FROM_ENCODING_UCS_4BE
-
-#define _ICONV_FROM_ENCODING_UCS_4LE
-
-#define _ICONV_FROM_ENCODING_UCS_4_INTERNAL
-
-#define _ICONV_FROM_ENCODING_US_ASCII
-
-#define _ICONV_FROM_ENCODING_UTF_16
-
-#define _ICONV_FROM_ENCODING_UTF_16BE
-
-#define _ICONV_FROM_ENCODING_UTF_16LE
-
-#define _ICONV_FROM_ENCODING_UTF_8
-
-#define _ICONV_FROM_ENCODING_WIN_1250
-
-#define _ICONV_FROM_ENCODING_WIN_1251
-
-#define _ICONV_FROM_ENCODING_WIN_1252
-
-#define _ICONV_FROM_ENCODING_WIN_1253
-
-#define _ICONV_FROM_ENCODING_WIN_1254
-
-#define _ICONV_FROM_ENCODING_WIN_1255
-
-#define _ICONV_FROM_ENCODING_WIN_1256
-
-#define _ICONV_FROM_ENCODING_WIN_1257
-
-#define _ICONV_FROM_ENCODING_WIN_1258
-
-#define _ICONV_TO_ENCODING_BIG5
-
-#define _ICONV_TO_ENCODING_CP775
-
-#define _ICONV_TO_ENCODING_CP850
-
-#define _ICONV_TO_ENCODING_CP852
-
-#define _ICONV_TO_ENCODING_CP855
-
-#define _ICONV_TO_ENCODING_CP866
-
-#define _ICONV_TO_ENCODING_EUC_JP
-
-#define _ICONV_TO_ENCODING_EUC_KR
-
-#define _ICONV_TO_ENCODING_EUC_TW
-
-#define _ICONV_TO_ENCODING_ISO_8859_1
-
-#define _ICONV_TO_ENCODING_ISO_8859_10
-
-#define _ICONV_TO_ENCODING_ISO_8859_11
-
-#define _ICONV_TO_ENCODING_ISO_8859_13
-
-#define _ICONV_TO_ENCODING_ISO_8859_14
-
-#define _ICONV_TO_ENCODING_ISO_8859_15
-
-#define _ICONV_TO_ENCODING_ISO_8859_2
-
-#define _ICONV_TO_ENCODING_ISO_8859_3
-
-#define _ICONV_TO_ENCODING_ISO_8859_4
-
-#define _ICONV_TO_ENCODING_ISO_8859_5
-
-#define _ICONV_TO_ENCODING_ISO_8859_6
-
-#define _ICONV_TO_ENCODING_ISO_8859_7
-
-#define _ICONV_TO_ENCODING_ISO_8859_8
-
-#define _ICONV_TO_ENCODING_ISO_8859_9
-
-#define _ICONV_TO_ENCODING_ISO_IR_111
-
-#define _ICONV_TO_ENCODING_KOI8_R
-
-#define _ICONV_TO_ENCODING_KOI8_RU
-
-#define _ICONV_TO_ENCODING_KOI8_U
-
-#define _ICONV_TO_ENCODING_KOI8_UNI
-
-#define _ICONV_TO_ENCODING_UCS_2
-
-#define _ICONV_TO_ENCODING_UCS_2BE
-
-#define _ICONV_TO_ENCODING_UCS_2LE
-
-#define _ICONV_TO_ENCODING_UCS_2_INTERNAL
-
-#define _ICONV_TO_ENCODING_UCS_4
-
-#define _ICONV_TO_ENCODING_UCS_4BE
-
-#define _ICONV_TO_ENCODING_UCS_4LE
-
-#define _ICONV_TO_ENCODING_UCS_4_INTERNAL
-
-#define _ICONV_TO_ENCODING_US_ASCII
-
-#define _ICONV_TO_ENCODING_UTF_16
-
-#define _ICONV_TO_ENCODING_UTF_16BE
-
-#define _ICONV_TO_ENCODING_UTF_16LE
-
-#define _ICONV_TO_ENCODING_UTF_8
-
-#define _ICONV_TO_ENCODING_WIN_1250
-
-#define _ICONV_TO_ENCODING_WIN_1251
-
-#define _ICONV_TO_ENCODING_WIN_1252
-
-#define _ICONV_TO_ENCODING_WIN_1253
-
-#define _ICONV_TO_ENCODING_WIN_1254
-
-#define _ICONV_TO_ENCODING_WIN_1255
-
-#define _ICONV_TO_ENCODING_WIN_1256
-
-#define _ICONV_TO_ENCODING_WIN_1257
-
-#define _ICONV_TO_ENCODING_WIN_1258
-
 /* math library does not set errno (offering only ieee semantics) */
 #define _IEEE_LIBM
 
@@ -378,9 +182,19 @@
 
 #undef _MB_CAPABLE
 
+#undef _MB_EXTENDED_CHARSETS_ISO
+
+#undef _MB_EXTENDED_CHARSETS_JIS
+
+#undef _MB_EXTENDED_CHARSETS_UCS
+
+#undef _MB_EXTENDED_CHARSETS_WINDOWS
+
 #undef _NANO_FORMATTED_IO
 
 #define _NANO_MALLOC
+
+#undef _NANO_MALLOC_CLEAR_FREED
 
 /* The newlib version in string format. */
 #define _NEWLIB_VERSION "4.3.0"
@@ -395,7 +209,7 @@
 #define _PICOLIBC_MINOR__ 8
 
 /* The Picolibc version in string format. */
-#define _PICOLIBC_VERSION "1.8.8"
+#define _PICOLIBC_VERSION "1.8.9"
 
 /* The Picolibc major version number. */
 #define _PICOLIBC__ 1
@@ -442,12 +256,6 @@
 
 #undef _WIDE_ORIENT
 
-/* extended locale support */
-#undef __HAVE_LOCALE_INFO_EXTENDED__
-
-/* locale support */
-#undef __HAVE_LOCALE_INFO__
-
 /* The newlib minor version number. */
 #define __NEWLIB_MINOR__ 3
 
@@ -473,10 +281,10 @@
 #define __PICOLIBC_MINOR__ 8
 
 /* The Picolibc patch level. */
-#define __PICOLIBC_PATCHLEVEL__ 8
+#define __PICOLIBC_PATCHLEVEL__ 9
 
 /* The Picolibc version in string format. */
-#define __PICOLIBC_VERSION__ "1.8.8"
+#define __PICOLIBC_VERSION__ "1.8.9"
 
 /* The Picolibc major version number. */
 #define __PICOLIBC__ 1

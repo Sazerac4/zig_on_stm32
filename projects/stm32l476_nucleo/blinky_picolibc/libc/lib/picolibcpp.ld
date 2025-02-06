@@ -71,9 +71,9 @@ SECTIONS
 	.text : {
 
 		/* code */
-		*(.text.unlikely .text.unlikely.*)
-		*(.text.startup .text.startup.*)
-		*(.text .text.* .opd .opd.*)
+		*(.literal.unlikely .text.unlikely .literal.unlikely.* .text.unlikely.*)
+		*(.literal.startup .text.startup .literal.startup.* .text.startup.*)
+		*(.literal .text .literal.* .text.* .opd .opd.*)
 		*(.gnu.linkonce.t.*)
 		KEEP (*(.fini .fini.*))
 		__text_end = .;

@@ -10,7 +10,7 @@
 - [Build](#build)
 - [Debugging CLI](#debugging-cli)
 - [Linker Note](#linker-note)
-- [Reference:](#reference)
+- [References](#references)
 
 
 ## Context
@@ -68,7 +68,7 @@ cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/relea
     && ln -s /opt/softs/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install zig
-ZIG_VERSION="0.14.0-dev.3046+08d661fcf"
+ZIG_VERSION="0.14.0-dev.3050+d72f3d353"
 cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/softs/ && \
     ln -s /opt/softs/zig-linux-x86_64-*/zig ~/.local/bin
@@ -77,7 +77,7 @@ cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.x
 ### Windows
 
 1. Create a `softs` folder (example : `C:\softs` )
-2. Download [zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0-dev.3046+08d661fcf.zip)
+2. Download [zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0-dev.3050+d72f3d353.zip)
 3. Download [arm-none-eabi-gcc](https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/tag/v14.2.1-1.1)
 4. Download [stlink](https://github.com/stlink-org/stlink/releases/tag/v1.8.0)
 5. Download [openocd](https://github.com/xpack-dev-tools/openocd-xpack/releases/tag/v0.12.0-4)
@@ -104,7 +104,7 @@ You need to choice between System wide or User level. Example below work if you 
 ```powershell
 [Environment]::SetEnvironmentVariable(
    "Path",
-   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\softs\stlink-1.8.0-win32\bin;C:\softs\zig-windows-x86_64-0.14.0-dev.3046+08d661fcf;C:\softs\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\softs\xpack-openocd-0.12.0-4\bin",
+   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\softs\stlink-1.8.0-win32\bin;C:\softs\zig-windows-x86_64-0.14.0-dev.3050+d72f3d353;C:\softs\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\softs\xpack-openocd-0.12.0-4\bin",
    "User"
 )
 ```
@@ -192,7 +192,7 @@ load
 
 More details with this [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide/tree/main/02_drop_in_compiler#modifying-our-linker-script)
 
-## Reference:
+## References
 
 - [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide) will help you to understand and port your current project. Ziggit topic [here](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414)
 - This project may interest you: [Microzig](https://github.com/ZigEmbeddedGroup/microzig) A Unified abstraction layer and HAL for several microcontrollers

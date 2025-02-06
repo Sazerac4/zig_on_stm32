@@ -72,6 +72,7 @@ Windows
 
 - [meson](https://github.com/mesonbuild/meson/releases/tag/1.7.0)
 - [ninja](https://github.com/ninja-build/ninja/releases/tag/v1.12.1)
+- [llvm19](https://github.com/llvm/llvm-project/releases/tag/llvmorg-19.1.0)
 
 ---
 
@@ -94,16 +95,25 @@ meson setup --cross-file /workspace/libc/cross-clang-thumbv7e+fp-none-eabi.txt \
     -Dnewlib-retargetable-locking=true \
     -Dnewlib-multithread=true \
     -Dformat-default=minimal \
-    -Dmultilib=false \
-    -Dmultilib-list=thumb/v7e-m+fp/hard \
+    -Ddebug=false \
+    -Doptimization=s \
     /picolibc/
+
 # Install
 ninja install
 # The following line is explained below
-cp /workspace/libc/lib/libc.a /workspace/libc/lib/libc_pico.a
+mv /workspace/libc/lib/libc.a /workspace/libc/lib/libc_pico.a
 ```
 
----
+## Build libc with Other CPU Parameters
+
+You need to create a Meson configuration file, such as `cross-clang-thumbv7e+fp-none-eabi.txt`, and modify these parameters according to your needs:
+
+```
+-mcpu=cortex-m4
+-mfloat-abi=hard
+-mfpu=fpv5-sp-d16
+```
 
 ### Integrating libc with Your Zig Script
 
@@ -129,24 +139,29 @@ Now it is compile, however zig code will not benefit of libc implementation, onl
 
 ---
 
-### Modifying the Picolibc Linker Script
+### Picolibc Linker Script
 
 Picolibc provides two linker script `picolibc.ld` and `picolibcpp.ld` that is used during the linking process. You can use it with Zig's linker (`lld`) without modification because
 we have build picolibc with clang/lld.
 
-### Replace the linker script from STM32CubeMX
+**Adapt the linker script from STM32CubeMX**
 
-Specific linker script now can just specify flash memory option, extra section and so on. See the new linker script `stm32l476rgtx_flash.ld`
+Target linker script now can just specify flash memory option, extra section and so on. See the new linker script `stm32l476rgtx_flash.ld`
 
-### Replace the startup code
+### Update the startup and the Vector Table
 
-From informations of `startup_stm32l476xx.s` file, I created my own startup `vector_table.c` with modification for picolibc integration
+From informations of `startup_stm32l476xx.s` file, I created my own startup `vector_table.c` with modification for picolibc integration.
+You can modify the original startup file as well if you prefer.
 
+1. Rename `g_pfnVectors` to `__interrupt_vector`. The reference is used by picolibc
+2. Replace stack start  `_estack`  by `__stack`
+3. Replace the entrypoint  `Reset_Handler`  by `_start`
 
-## Notes About libc
+## Notes
 
 - For an interesting discussion on integrating Picolibc or alternative libc implementations for embedded systems, check out this [Ziggit thread](https://ziggit.dev/t/adding-picolibc-or-alternative-for-embedded/).
 - For more context on integrating custom libc implementations, see this [GitHub issue](https://github.com/ziglang/zig/issues/20327).
+- Effort to make compatible Zig with meson build system. [GitHub issue](https://github.com/mesonbuild/meson/issues/12652)
 
 
 
