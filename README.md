@@ -9,7 +9,7 @@
 - [SVD Files](#svd-files)
 - [Build](#build)
 - [Debugging CLI](#debugging-cli)
-- [Linker Note](#linker-note)
+- [Note for STM32CubeMX generated linker script](#note-for-stm32cubemx-generated-linker-script)
 - [References](#references)
 
 
@@ -21,8 +21,9 @@ These examples utilize the STM32CubeMX code generator as well as the drivers pro
 
 ## Examples List
 
-- Bare-metal blinky example with C and Zig implementation 
-- FreeRTOS blinky example with C and Zig implementation 
+1. Blinky Example with C and Zig Implementation
+2. Blinky Example with Picolibc Integration in the Zig Build System
+3. FreeRTOS Blinky Example with C and Zig Implementation
 
 **Project tree**
 
@@ -131,11 +132,11 @@ You can download theses extensions:
 
 - `marus25.cortex-debug` for debugging ARM Cortex-M targets.
 
-(image)
+<img src="docs/images/vscode2.png" alt="drawing" width="80%"/>
 
 - `actboy168.tasks` to got quick shortcut of your tasks in your status bar
 
-(image)
+<img src="docs/images/vscode3.png" alt="drawing" width="70%"/>
 
 ## SVD Files
 
@@ -144,7 +145,7 @@ The CMSIS System View Description format(CMSIS-SVD) formalizes the description o
 - You can use [regz](https://github.com/ZigEmbeddedGroup/microzig/tree/main/tools/regz) to generate `registers` code.
 - You can use it with VS Code in debugging mode
 
-(image)
+<img src="docs/images/vscode1.png" alt="drawing" width="50%"/>
 
 You can found stm32 svd files [here](https://github.com/modm-io/cmsis-svd-stm32)
 
@@ -172,7 +173,7 @@ You can flash the firmware inside gdb with:
 load
 ```
 
-## Linker Note
+## Note for STM32CubeMX generated linker script
 
 - We need to move the declaration for `_estack` to after the region `RAM` is defined. 
 - The section `_user_heap_stack` is in RAM (and thus wont' be flashed to the device), so it really should be marked with `(NOLOAD)` like so:

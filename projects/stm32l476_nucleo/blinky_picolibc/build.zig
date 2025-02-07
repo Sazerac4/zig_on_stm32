@@ -89,13 +89,11 @@ pub fn build(b: *std.Build) void {
     }
 
     //////////////////////////////////////////////////////////////////
-    const picolib_lib_path1 = "libc/lib/";
-
-    elf.addLibraryPath(.{ .cwd_relative = picolib_lib_path1 });
+    elf.addLibraryPath(.{ .cwd_relative = "libc/lib/" });
     elf.addSystemIncludePath(.{ .cwd_relative = "libc/include" });
     elf.linkSystemLibrary("c_pico");
     elf.linkSystemLibrary("crt0");
-    elf.linkSystemLibrary("m");
+    //elf.linkSystemLibrary("m");
 
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));
     elf.entry = .{ .symbol_name = "_start" }; // Set Entry Point of the firmware (Already set in the linker script)

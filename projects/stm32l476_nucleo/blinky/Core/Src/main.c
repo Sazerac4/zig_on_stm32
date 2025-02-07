@@ -70,8 +70,8 @@ int main(void)
 {
 
     /* USER CODE BEGIN 1 */
-    char volatile test_libc[40];
-    float volatile a = sin(55);
+    char test_libc[40];
+    float volatile a = (float)sin(55);
     snprintf(test_libc, sizeof(test_libc), "%f",a);
 
     /* USER CODE END 1 */

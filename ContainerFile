@@ -1,11 +1,13 @@
-FROM fedora:41
+FROM debian:12
 LABEL description "Build zig examples" \
     maintainer="Sazerac4 <lm-embeddedsystems@laposte.net>"
 
 RUN mkdir -vp /opt/softs && mkdir -vp ~/.local/bin
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update --fix-missing  && apt upgrade -y
 
 #Install tools
-RUN yum install -y wget cmake make stlink openocd moreutils setserial
+RUN apt install --no-install-recommends -y xz-utils ca-certificates wget cmake make stlink-tools openocd
 
 #Install gcc
 ARG GCC_VERSION="14.2.1-1.1"
@@ -20,7 +22,7 @@ RUN cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.t
     ln -s /opt/softs/zig-linux-x86_64-*/zig ~/.local/bin
 
 #Clean image
-RUN yum clean all && rm -rf -- /var/cache/yum && rm -rf -- /tmp/*
+RUN apt clean && rm -rf -- /var/lib/apt/lists/* && rm -rf -- /tmp/*
 
 WORKDIR /apps
 VOLUME  /apps

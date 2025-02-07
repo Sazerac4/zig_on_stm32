@@ -1,5 +1,4 @@
-# Meson settings to compile with clang.
-
+# Meson settings to compile picolibc with clang.
 [binaries]
 c = ['clang-19', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
 cpp = ['clang-19', '-m32', '-target', 'thumb-freestanding-eabihf', '-mcpu=cortex-m4', '-mfloat-abi=hard', '-mfpu=fpv5-sp-d16', '-nostdlib']
@@ -19,6 +18,7 @@ c_args = [ '-Werror=double-promotion', '-Wno-unsupported-floating-point-opt', '-
 c_link_args = [ '-Wl,-z,noexecstack', '-Wno-unused-command-line-argument']
 cpp_link_args = [ '-Wl,-z,noexecstack', '-Wno-unused-command-line-argument']
 
+# Default flash and ram information for stm32l476rgt
 [properties]
 skip_sanity_check = true
 default_flash_addr = '0x08000000'
