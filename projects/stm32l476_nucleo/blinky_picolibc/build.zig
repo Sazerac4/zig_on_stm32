@@ -70,7 +70,6 @@ pub fn build(b: *std.Build) void {
 
     //////////////////////////////////////////////////////////////////
     const c_sources_core = [_][]const u8{
-        "Core/Src/vector_table.c",
         "Core/Src/main.c",
         "Core/Src/gpio.c",
         "Core/Src/usart.c",

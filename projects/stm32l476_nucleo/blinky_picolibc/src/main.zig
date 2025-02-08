@@ -1,4 +1,10 @@
 const std = @import("std");
+
+// Responsible for exporting vector table symbols
+comptime {
+    @import("vector_table.zig").exportVectorTable();
+}
+
 const c = @cImport({
     @cDefine("USE_HAL_DRIVER", {});
     @cDefine("STM32L476xx", {});

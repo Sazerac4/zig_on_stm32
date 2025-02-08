@@ -43,6 +43,9 @@ blinky_picolibc/
 │       └── picolibcpp.ld
 ├── src
 │   └── main.zig
+├── vector_table_examples
+│   ├── vector_table.c
+│   └── vector_table.s
 ├── .vscode
 ├── blinky.ioc
 ├── build.zig
@@ -127,8 +130,7 @@ error: libc not available
     note: run 'zig targets' to see the targets for which zig can always provide libc
 ```
 
-Zig does not currently allow you to customize your own libc implementation. For more details, see this [GitHub issue](https://github.com/ziglang/zig/issues/20327) discussing the topic.
-However, there is a workaround: you can rename the libc library and link it manually.
+Zig does not currently allow you to customize your own libc implementation. For more details, see this [GitHub issue](https://github.com/ziglang/zig/issues/20327) discussing the topic. However, there is a workaround: you can rename the libc library and link it manually.
 
 For example:
 ```bash
@@ -154,8 +156,7 @@ Target linker script now can just specify flash memory option, extra section and
 
 ### Update the startup and the Vector Table
 
-From informations of `startup_stm32l476xx.s` file, I created my own startup `vector_table.c` with modification for picolibc integration.
-You can modify the original startup file as well if you prefer.
+I created my own startup file `vector_table.zig` with modifications for picolibc integration. You can see the assembler and C implementations under the folder `vector_table_examples`. Here is what needs to be changed from the original file `startup_stm32l476xx.s`:
 
 1. Rename `g_pfnVectors` to `__interrupt_vector`. The reference can be used by picolibc
 2. Rename `isr_vector` section to `.text.init.enter`
@@ -166,6 +167,7 @@ You can modify the original startup file as well if you prefer.
 
 ## Notes
 
+- Main article about this picolibc implementation: [ziggit](https://ziggit.dev/t/adding-picolibc-for-embedded-stm32-example/8421)
 - For an interesting discussion on integrating Picolibc or alternative libc implementations for embedded systems, check out this [Ziggit thread](https://ziggit.dev/t/adding-picolibc-or-alternative-for-embedded/).
 - For more context on integrating custom libc implementations, see this [GitHub issue](https://github.com/ziglang/zig/issues/20327).
 - Effort to make compatible Zig with meson build system. [GitHub issue](https://github.com/mesonbuild/meson/issues/12652)
