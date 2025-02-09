@@ -45,7 +45,7 @@ const DebugMon_Handler = @extern(IsrFunction, .{ .name = "DebugMon_Handler", .li
 const PendSV_Handler = @extern(IsrFunction, .{ .name = "PendSV_Handler", .linkage = .weak });
 const SysTick_Handler = @extern(IsrFunction, .{ .name = "SysTick_Handler", .linkage = .weak });
 
-// // ARMCM4 Specific Interrupts
+// ARM CM4 Specific Interrupts
 const WWDG_IRQHandler = @extern(IsrFunction, .{ .name = "WWDG_IRQHandler", .linkage = .weak });
 const PVD_PVM_IRQHandler = @extern(IsrFunction, .{ .name = "PVD_PVM_IRQHandler", .linkage = .weak });
 const TAMP_STAMP_IRQHandler = @extern(IsrFunction, .{ .name = "TAMP_STAMP_IRQHandler", .linkage = .weak });

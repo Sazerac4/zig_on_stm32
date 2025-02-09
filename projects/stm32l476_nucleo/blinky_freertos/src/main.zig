@@ -22,7 +22,7 @@ export fn zig_task(params: ?*anyopaque) callconv(.C) void {
     }
 }
 
-export fn zig_entrypoint() void {
+export fn zigEntrypoint() void {
 
     // Temporary task to initialize the system
     const pvParameters: ?*anyopaque = null;

@@ -40,4 +40,8 @@ SECTIONS
 
 }
 
+/* Printf and Scanf Options. Equivalent to --defsym  */
+vfprintf = __m_vfprintf; /*disable*/
+vfscanf = __m_vfscanf; /*disable*/
+
 INCLUDE libc/lib/picolibc.ld

@@ -62,7 +62,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern void zig_entrypoint(void);
+extern void zigEntrypoint(void);
 extern void SystemInit(void);
 
 // Picolibc will call _init before entering in main
@@ -117,7 +117,7 @@ int main(void)
     MX_GPIO_Init();
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
-    zig_entrypoint();
+    zigEntrypoint();
     /* USER CODE END 2 */
 
     /* Infinite loop */

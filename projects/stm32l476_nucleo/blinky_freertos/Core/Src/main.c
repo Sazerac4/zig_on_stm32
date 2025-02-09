@@ -47,7 +47,7 @@
 
 /* USER CODE BEGIN PV */
 #if (NO_ZIG == 1)
-extern void zig_entrypoint(void);
+extern void zigEntrypoint(void);
 #endif
 /* USER CODE END PV */
 
@@ -95,7 +95,7 @@ int main(void)
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
 #if (NO_ZIG == 1)
-    zig_entrypoint(); // The program will stop here
+    zigEntrypoint(); // The program will stop here
 #endif
 
     // Temporary task to initialize the system

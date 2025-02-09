@@ -31,7 +31,7 @@ void DebugMon_Handler(void) __attribute__((weak, alias("Default_Handler")));
 void PendSV_Handler(void) __attribute__((weak, alias("Default_Handler")));
 void SysTick_Handler(void) __attribute__((weak, alias("Default_Handler")));
 
-/* ARMCM4 Specific Interrupts */
+/* ARM CM4 Specific Interrupts */
 void WWDG_IRQHandler(void) __attribute__((weak, alias("Default_Handler")));
 void PVD_PVM_IRQHandler(void) __attribute__((weak, alias("Default_Handler")));
 void TAMP_STAMP_IRQHandler(void) __attribute__((weak, alias("Default_Handler")));

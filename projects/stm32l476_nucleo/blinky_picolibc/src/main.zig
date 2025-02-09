@@ -12,7 +12,7 @@ const c = @cImport({
     @cInclude("main.h");
 });
 
-export fn zig_entrypoint() noreturn {
+export fn zigEntrypoint() noreturn {
     while (true) {
         c.HAL_GPIO_WritePin(c.LD2_GPIO_Port, c.LD2_Pin, c.GPIO_PIN_RESET);
         c.HAL_Delay(200);
