@@ -76,6 +76,7 @@ pub fn build(b: *std.Build) void {
         "Core/Src/stm32l4xx_it.c",
         "Core/Src/stm32l4xx_hal_msp.c",
         "Core/Src/system_stm32l4xx.c",
+        "Core/Src/syscalls.c",
     };
     elf.addCSourceFiles(.{
         .files = &c_sources_core,
@@ -92,7 +93,6 @@ pub fn build(b: *std.Build) void {
     elf.addSystemIncludePath(.{ .cwd_relative = "libc/include" });
     elf.linkSystemLibrary("c_pico");
     elf.linkSystemLibrary("crt0");
-    //elf.linkSystemLibrary("m");
 
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));
     elf.entry = .{ .symbol_name = "_start" }; // Set Entry Point of the firmware (Already set in the linker script)

@@ -46,16 +46,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-#if (NO_ZIG == 1)
 extern void zigEntrypoint(void);
-#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-static void _vTaskBlink(void* pvParameters);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,14 +92,8 @@ int main(void)
     MX_GPIO_Init();
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
-#if (NO_ZIG == 1)
-    zigEntrypoint(); // The program will stop here
-#endif
-
-    // Temporary task to initialize the system
-    xTaskCreate(_vTaskBlink, "Init", 256, NULL, 15, NULL);
-    // Start application
-    vTaskStartScheduler();
+    zigEntrypoint(); 
+    // The program will never go here
     /* USER CODE END 2 */
 
     /* Init scheduler */
@@ -175,18 +167,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void _vTaskBlink(void* pvParameters)
-{
-    (void)pvParameters;
 
-    while (1)
-    {
-        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-        vTaskDelay(150);
-        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-        vTaskDelay(150);
-    }
-}
 /* USER CODE END 4 */
 
 /**

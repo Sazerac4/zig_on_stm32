@@ -27,6 +27,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,7 +77,7 @@ void _init(void)
     memset(__ram2_start, '\0', (uintptr_t)__ram2_size);
 }
 #else
-#warning "CMSIS System Initialization will not be called"
+#error "CMSIS System Initialization will not be called"
 #endif
 /* USER CODE END 0 */
 
@@ -91,9 +92,13 @@ int main(void)
     // math test
     volatile float a  = sinf(55);
     volatile double b = sin(55);
-
     // Formatting test
     snprintf(memory2_area, sizeof(memory2_area), "%f,%f", a, b);
+    //
+    const unsigned int malloc_size = 50;
+    char* malloc_test              = (char*)malloc(malloc_size);
+    snprintf(malloc_test, malloc_size, "ptr: %u, size:%d", malloc_size, (uintptr_t)malloc_test);
+    printf("%s", malloc_test);
 
     /* USER CODE END 1 */
 

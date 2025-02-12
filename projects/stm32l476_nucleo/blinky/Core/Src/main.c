@@ -22,7 +22,7 @@
 #include "gpio.h"
 #include <stdio.h>
 #include <math.h>
-
+#include <stdlib.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -46,9 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-#if defined(NO_ZIG) && (NO_ZIG == 1)
 extern void zigEntrypoint(void);
-#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,9 +68,17 @@ int main(void)
 {
 
     /* USER CODE BEGIN 1 */
-    char test_libc[40];
-    float volatile a = (float)sin(55);
-    snprintf(test_libc, sizeof(test_libc), "%f",a);
+    char test_libc[53];
+    volatile float a  = sinf(55);
+    volatile double b = sin(55);
+
+    // Formatting test
+    snprintf(test_libc, sizeof(test_libc),  "%f,%f", a, b);
+    //
+    const unsigned int malloc_size = 50;
+    char* malloc_test              = (char*)malloc(malloc_size);
+    snprintf(malloc_test, malloc_size, "ptr: %u, size:%d", malloc_size, (uintptr_t)malloc_test);
+    printf("%s", malloc_test);
 
     /* USER CODE END 1 */
 
@@ -96,19 +102,13 @@ int main(void)
     MX_GPIO_Init();
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
-#if defined(NO_ZIG) && (NO_ZIG == 1)
     zigEntrypoint();
-#endif
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1)
     {
-        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-        HAL_Delay(150);
-        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-        HAL_Delay(150);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

@@ -75,7 +75,7 @@ Windows
 
 - [meson](https://github.com/mesonbuild/meson/releases/tag/1.7.0)
 - [ninja](https://github.com/ninja-build/ninja/releases/tag/v1.12.1)
-- [llvm19](https://github.com/llvm/llvm-project/releases/tag/llvmorg-19.1.0)
+- [llvm19](https://github.com/llvm/llvm-project/releases/tag/llvmorg-19.1.7)
 
 ---
 
@@ -93,8 +93,6 @@ meson setup --cross-file /workspace/libc/cross-clang-thumbv7e+fp-custom.txt \
     -Dtests=false \
     -Dpicocrt=true \
     -Dnewlib-global-atexit=true  \
-    -Dnewlib-retargetable-locking=true \
-    -Dnewlib-multithread=true \
     -Ddebug=false \
     -Doptimization=s \
     /picolibc/
@@ -186,6 +184,13 @@ I created my own startup file `vector_table.zig` with modifications for picolibc
 4. Rename the entrypoint  `Reset_Handler` to `_start` in the `__interrupt_vector` table
 5. Remove the `Reset_Handler` and `LoopForever` function.
 6. Remove symbol `_sidata`, `_sdata`, `_edata`, `_sbss`, `_ebss`
+
+
+You can note that the instruction `ldr   sp, =__stack` is not used anymore . This instruction is used by ARM architecture to initialize the stack pointer.
+For STM32 microcontrollers (and many other ARM Cortex-M-based microcontrollers), the stack pointer is automatically initialized by the hardware using a specific memory address defined in the vector table (here `0x08000000`)
+
+I don’t know exactly why this instruction is in the template (it might be for historical or compatibility reasons), but you can remove it without any issues.
+One example where it might be needed is when you have a bootloader and your starting address changes (e.g., `0x08010000`). However, in such cases, you would typically set the new vector table before jumping to the application in the bootloader.
 
 ## Notes
 

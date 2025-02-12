@@ -21,6 +21,7 @@ pub fn build(b: *std.Build) void {
     const opti = b.standardOptimizeOption(.{});
 
     const exe_mod = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = opti,
         .link_libc = false,
@@ -49,15 +50,10 @@ pub fn build(b: *std.Build) void {
         };
 
     // Allow user to enable float formatting in newlib (printf, sprintf, ...)
-    if (b.option(bool, "NEWLIB_PRINTF_FLOAT", "Force newlib to include float support for printf()")) |_| {
+    if (b.option(bool, "NEWLIB_PRINTF_FLOAT", "Force newlib to include float support for printf and variants functions")) |_| {
         elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
     }
 
-    var zig_implementation_disable = "0";
-    if (b.option(bool, "NO_ZIG", "Use zig implementation")) |_| {} else {
-        zig_implementation_disable = "1";
-        exe_mod.root_source_file = b.path("src/main.zig");
-    }
     //////////////////////////////////////////////////////////////////
 
     const asm_sources = [_][]const u8{"startup_stm32l476xx.s"};
@@ -84,7 +80,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall", "-DNO_ZIG=" ++ zig_implementation_disable };
+    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
     //////////////////////////////////////////////////////////////////
     for (asm_sources) |path| {
@@ -147,7 +143,7 @@ pub fn build(b: *std.Build) void {
     // elf.setVerboseCC(true);
     // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
     elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
-    elf.want_lto = false; // -flto
+    elf.want_lto = true; // -flto
     elf.link_data_sections = true; // -fdata-sections
     elf.link_function_sections = true; // -ffunction-sections
     elf.link_gc_sections = true; // -Wl,--gc-sections
