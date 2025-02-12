@@ -16,6 +16,9 @@ RUN cd /tmp && wget https://github.com/picolibc/picolibc/archive/refs/tags/${PIC
 #Clean image
 RUN apt clean && rm -rf -- /var/lib/apt/lists/* && rm -rf -- /tmp/*
 
+#Add Custom bin path
+ENV PATH="~/.local/bin:${PATH}"
+
 WORKDIR /workspace
 VOLUME  /workspace
 

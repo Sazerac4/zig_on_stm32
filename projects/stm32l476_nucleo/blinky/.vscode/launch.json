@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Attach (openocd)",
+            "name": "Attach",
             "showDevDebugOutput": "parsed",
             "cwd": "${workspaceFolder}",
             "executable": "${workspaceFolder}/zig-out/bin/blinky.elf",
@@ -19,10 +19,14 @@
                 "enabled": false,
                 "samplesPerSecond": 2
             },
+            "debuggerArgs": [
+                "-x",
+                "${workspaceFolder}/.gdbinit"
+            ],
             "svdFile": "${workspaceFolder}/STM32L476.svd"
         },
         {
-            "name": "Launch (openocd)",
+            "name": "Launch",
             "showDevDebugOutput": "parsed",
             "cwd": "${workspaceFolder}",
             "executable": "${workspaceFolder}/zig-out/bin/blinky.elf",
@@ -40,6 +44,10 @@
                 "enabled": false,
                 "samplesPerSecond": 2
             },
+            "debuggerArgs": [
+                "-x",
+                "${workspaceFolder}/.gdbinit"
+            ],
             "svdFile": "${workspaceFolder}/STM32L476.svd"
         }
     ]
