@@ -61,7 +61,7 @@ blinky_picolibc/
 
 ## Picolibc Integration
 
-### Prerequiste
+### Prerequisite
 
 Linux
 
@@ -73,9 +73,8 @@ sudo apt install meson ninja-build llvm-19 clang-19 lld-19
 ```
 Windows
 
-- [meson](https://github.com/mesonbuild/meson/releases/tag/1.7.0)
-- [ninja](https://github.com/ninja-build/ninja/releases/tag/v1.12.1)
-- [llvm19](https://github.com/llvm/llvm-project/releases/tag/llvmorg-19.1.7)
+- [meson+ninja](https://github.com/mesonbuild/meson/releases/tag/1.7.0)
+- [llvm19+clang](https://github.com/llvm/llvm-project/releases/tag/llvmorg-19.1.7)
 
 ---
 
@@ -105,7 +104,7 @@ mv /workspace/libc/lib/libc.a /workspace/libc/lib/libc_pico.a
 
 ---
 
-### Build libc with Other CPU Parameters
+### Build it with other CPU Parameters
 
 You need to create a Meson configuration file, such as mine `cross-clang-thumbv7e+fp-custom.txt`, and modify these parameters according to your needs:
 
@@ -117,7 +116,7 @@ You need to create a Meson configuration file, such as mine `cross-clang-thumbv7
 
 ---
 
-### Integrating libc with Your Zig Script
+### Integrating the libc with Your Zig Script
 
 If you compile your Zig program using `elf.linkSystemLibrary("c");` or if your module has the option `.link_libc = true,`, you may encounter the following error:
 
@@ -185,6 +184,7 @@ I created my own startup file `vector_table.zig` with modifications for picolibc
 5. Remove the `Reset_Handler` and `LoopForever` function.
 6. Remove symbol `_sidata`, `_sdata`, `_edata`, `_sbss`, `_ebss`
 
+---
 
 You can note that the instruction `ldr   sp, =__stack` is not used anymore . This instruction is used by ARM architecture to initialize the stack pointer.
 For STM32 microcontrollers (and many other ARM Cortex-M-based microcontrollers), the stack pointer is automatically initialized by the hardware using a specific memory address defined in the vector table (here `0x08000000`)
@@ -194,8 +194,8 @@ One example where it might be needed is when you have a bootloader and your star
 
 ## Notes
 
-- Main article about this picolibc implementation: [ziggit](https://ziggit.dev/t/adding-picolibc-for-embedded-stm32-example/8421)
-- For an interesting discussion on integrating Picolibc or alternative libc implementations for embedded systems, check out this [Ziggit thread](https://ziggit.dev/t/adding-picolibc-or-alternative-for-embedded/).
+- Main article about this picolibc implementation: [Ziggit topic](https://ziggit.dev/t/adding-picolibc-for-embedded-stm32-example/8421)
+- For an interesting discussion on integrating Picolibc or alternative libc implementations for embedded systems, check out this [Ziggit topic](https://ziggit.dev/t/adding-picolibc-or-alternative-for-embedded/).
 - For more context on integrating custom libc implementations, see this [GitHub issue](https://github.com/ziglang/zig/issues/20327).
 - Effort to make compatible Zig with meson build system. [GitHub issue](https://github.com/mesonbuild/meson/issues/12652)
 

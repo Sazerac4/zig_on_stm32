@@ -1,16 +1,18 @@
+# Zig Meets C: Cross-Language Development for Embedded Microcontrollers
 
-- [Description](#description)
-- [Examples List](#examples-list)
-- [Installation](#installation)
-  - [Linux](#linux)
-  - [Windows](#windows)
-  - [Containers (Podman or Docker)](#containers-podman-or-docker)
-  - [Vs Code / Vs Codium](#vs-code--vs-codium)
-- [SVD Files](#svd-files)
-- [Build](#build)
-- [Debugging CLI](#debugging-cli)
-- [For STM32CubeMX generated linker script](#for-stm32cubemx-generated-linker-script)
-- [References](#references)
+- [Zig Meets C: Cross-Language Development for Embedded Microcontrollers](#zig-meets-c-cross-language-development-for-embedded-microcontrollers)
+  - [Description](#description)
+  - [Issue](#issue)
+  - [Examples List](#examples-list)
+  - [Installation](#installation)
+    - [Linux](#linux)
+    - [Windows](#windows)
+    - [Containers (Podman or Docker)](#containers-podman-or-docker)
+    - [Vs Code / Vs Codium](#vs-code--vs-codium)
+  - [SVD Files](#svd-files)
+  - [Build](#build)
+  - [For STM32CubeMX generated linker script](#for-stm32cubemx-generated-linker-script)
+  - [References](#references)
 
 
 ## Description
@@ -22,7 +24,16 @@
 - Your future project rely heavily on C-based components, such as operating systems (e.g., FreeRTOS), filesystems (e.g., LittleFS), libraries, drivers, etc. You don’t want to rewrite initialization or configuration routines that already work well and are widely used elsewhere.
 - You work with coworkers who will maintain, update, and/or test parts of the project's C code. They may not use Zig—either not yet or never.
 
-In this repository, I’d like to share some demo examples that demonstrate how to integrate Zig code into your existing projects. I’ll also include the tools I used to do the cross-development between C and Zig.
+This repository explores the integration of Zig and C for microcontroller development, covering both baremetal and OS-based environments. It provides practical examples, tutorials, and tools to help developers combine the power of Zig's modern features with the established ecosystem of C.
+
+This is a work in progress, and help is welcome to add more examples, improve documentation, or provide corrections.
+
+## Issue
+
+- Using the libc with C code is currently a workaround, and Zig code will ignore it for now. However, this will likely be possible in the near future ([Zig Issue](https://github.com/ziglang/zig/issues/20327)).  
+- JSON Compilation Database, which is used with many C tools (e.g., linters, LSPs, IDE,etc.), will soon be supported. [Zig issue](https://github.com/ziglang/zig/pull/22012).  
+- `@cImport` is planned to work differently in the future. For more details, see this [Zig issue](https://github.com/ziglang/zig/issues/20630).
+
 
 ## Examples List
 
@@ -42,16 +53,17 @@ projects/
 
 ## Installation
 
-**Tools:**
+List of tools that is used around examples
 
 | Name              | Version   | Description                                                             |
 | :---------------- | --------- | :---------------------------------------------------------------------- |
-| Zig               | `0.14.0`  | for compiling C and Zig code                                            |
-| Arm GNU Toolchain | `14.2.1`  | to provide the libc (newlib) needed by C source code                    |
-| Clang             | `19.1.7`  | for compiling the libc (picolibc)                                       |
-| ST link           | `v1.8.0`  | for flashing firmware                                                   |
-| OpenOCD           | `v0.12.0` | to provide debugging                                                    |
-| STM32CubeMX       | `6.13.0`  | for the generation of the corresponding initialization C code for STM32 |
+| Zig               | `0.14.0`  | For compiling C and Zig code                                            |
+| ZLS               | `0.14.0`  | Language Server Protocol for Zig                                        |
+| Arm GNU Toolchain | `14.2.1`  | Tools fot C developpement and newlib needed by C source code            |
+| LLVM+Clang        | `19.1.7`  | Tools for C development (clang-format, clang-tidy, clangd)              |
+| ST link           | `v1.8.0`  | For flashing firmware                                                   |
+| OpenOCD           | `v0.12.0` | To provide debugging                                                    |
+| STM32CubeMX       | `6.13.0`  | For the generation of the corresponding initialization C code for STM32 |
 
 
 Some of theses tools are downloaded from the [xPack Binary Development Tools](https://xpack-dev-tools.github.io/) project.
@@ -60,58 +72,35 @@ Some of theses tools are downloaded from the [xPack Binary Development Tools](ht
 
 ```bash
 #Fedora
-yum install make wget stlink openocd
+yum install wget stlink openocd clang-tools-extra clang
 #Debian
-apt install make wget stlink-tools openocd xz-utils
+apt install xz-utils wget stlink-tools openocd clang-tools clang-tidy clang-format
 
-#Create folder softs
-mkdir -vp /opt/softs
+#Create tools folder
+mkdir -vp /opt/tools
 
 #Install arm-none-eabi-gcc (xpack version)
 GCC_VERSION="14.2.1-1.1"
 cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v${GCC_VERSION}/xpack-arm-none-eabi-gcc-${GCC_VERSION}-linux-x64.tar.gz \
-    && tar -xf /tmp/xpack-arm-none-eabi-gcc-*-linux-x64.tar.gz -C /opt/softs/ \
-    && ln -s /opt/softs/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
+    && tar -xf /tmp/xpack-arm-none-eabi-gcc-*-linux-x64.tar.gz -C /opt/tools/ \
+    && ln -s /opt/tools/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install zig
-ZIG_VERSION="0.14.0-dev.3050+d72f3d353"
+ZIG_VERSION="0.14.0-dev.3213+53216d2f2"
 cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
-    tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/softs/ && \
-    ln -s /opt/softs/zig-linux-x86_64-*/zig ~/.local/bin
+    tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/tools/ && \
+    ln -s /opt/tools/zig-linux-x86_64-*/zig ~/.local/bin
+
+#Install ZLS
+ZLS_VERSION="0.14.0"
+cd /tmp && wget https://github.com/zigtools/zls/releases/download/${ZLS_VERSION}/zls-x86-linux.tar.xz && \
+    tar -xf /tmp/zls-x86-linux.tar.xz -C /opt/tools/ && \
+    ln -s /opt/tools/zls-x86_64-linux/zls ~/.local/bin
 ```
 
 ### Windows
 
-1. Create a `softs` folder (example : `C:\softs` )
-2. Download [Zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0-dev.3050+d72f3d353.zip)
-3. Download [Arm GNU Toolchain](https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/tag/v14.2.1-1.1)
-4. Download [ST link](https://github.com/stlink-org/stlink/releases/tag/v1.8.0)
-5. Download [OpenOCD](https://github.com/xpack-dev-tools/openocd-xpack/releases/tag/v0.12.0-4)
-6. Extract everything to the folder `softs`
-
-**Setup environnement variables**
-
-Here, the command to setup environnement variable according to the instructions below.
-You need to choice between System wide or User level. Example below work if you use `C:\softs` 
-
-- System wide (admin Powershell):
-
-```powershell
-[Environment]::SetEnvironmentVariable(
-   "Path",
-   [Environment]::GetEnvironmentVariable("Path", "Machine") + ";C:\softs\stlink-1.8.0-win32\bin;C:\softs\zig-windows-x86_64-0.14.0;C:\softs\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\softs\xpack-openocd-0.12.0-4\bin",
-   "Machine"
-)
-```
-- User level (Powershell):
-
-```powershell
-[Environment]::SetEnvironmentVariable(
-   "Path",
-   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\softs\stlink-1.8.0-win32\bin;C:\softs\zig-windows-x86_64-0.14.0-dev.3050+d72f3d353;C:\softs\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\softs\xpack-openocd-0.12.0-4\bin",
-   "User"
-)
-```
+For Windows users,  Information available in this [document](docs/windows.md) to setup your environnement.
 
 ### Containers (Podman or Docker)
 
@@ -120,32 +109,22 @@ Two technologies exist, both CLI APIs are mostly compatible: the well-known Dock
 
 ```bash
 #Create the image
-podman build -f ContainerFile --tag=zig_on_stm32:0.14.0 .
+podman build -f ContainerFile --tag=zig_and_c:0.14.0 .
 #Run a container
-podman run --rm -it --privileged -v ./projects:/apps --name=zig_on_stm32 zig_on_stm32:0.14.0
+podman run --rm -it --privileged -v ./projects:/apps --name=zig_and_c zig_and_c:0.14.0
 # Navigate to a project (example blinky)
 cd stm32l476_nucleo/blinky
+# Build the firmware
+zig build
+#Flash the device (Linux only)
+zig build flash
 ```
 
 Remove dangling image if needed `podman image prune`
 
-**Debugging Trick with containers**
-
-- TODO: Try to mount a container with same path host/containers
-
-
 ### Vs Code / Vs Codium
 
-For `Vs Code` User, all project got à `.vscode` folder with à `launch.json` for debugging and à `tasks.json` to build and upload the firmware.
-You can download theses extensions:
-
-- `marus25.cortex-debug` for debugging ARM Cortex-M targets.
-
-<img src="docs/images/vscode2.png" alt="drawing" width="80%"/>
-
-- `actboy168.tasks` to got quick shortcut of your tasks in your status bar
-
-<img src="docs/images/vscode3.png" alt="drawing" width="70%"/>
+For Vs Code users, Information available in this [document](docs/vscode.md) for configurations
 
 ## SVD Files
 
@@ -156,41 +135,21 @@ The CMSIS System View Description format(CMSIS-SVD) formalizes the description o
 
 <img src="docs/images/vscode1.png" alt="drawing" width="50%"/>
 
-You can found stm32 svd files [here](https://github.com/modm-io/cmsis-svd-stm32)
+You can found stm32 SVD files in this [Github repository](https://github.com/modm-io/cmsis-svd-stm32)
 
 ## Build
 
-- See the `README.md` for each project for specific options and instructions
-
-## Debugging CLI
-
-Example with `blinky` project In a terminal, navigate to the directory project `projects/stm32l476_nucleo/blinky`, then run
-   
-```bash
-openocd -c "gdb_port 50000" -c "tcl_port 50001" -c "telnet_port 50002" -s ./ -f interface/stlink.cfg -f target/stm32l4x.cfg
-```
-
-From another terminal in the same folder, run:
-
-```bash
-arm-none-eabi-gdb zig-out/bin/blinky.elf -ex "target extended-remote :50000"
-```
-
-You can flash the firmware inside gdb with:
-
-```bash
-load
-```
+All projects use the [Zig Build System](https://ziglang.org/learn/build-system/).  
+Check the `README.md` of an example for additional specific information.
 
 ## For STM32CubeMX generated linker script
 
 Some requirements are needed to make it work with `lld` used by Zig.
 
-- We need to move the declaration for `_estack` to after the region `RAM` is defined. 
-- The section `_user_heap_stack` is in RAM (and thus wont' be flashed to the device), so it really should be marked with `(NOLOAD)` like so:
+1. We need to move the declaration for `_estack` to after the region `RAM` is defined. 
+2. The section `_user_heap_stack` is in RAM (and thus wont' be flashed to the device), so it really should be marked with `(NOLOAD)` like so:
 
 ```ld
-/* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack (NOLOAD) :
   {
     . = ALIGN(8);
@@ -204,6 +163,7 @@ Some requirements are needed to make it work with `lld` used by Zig.
 
 ## References
 
-- [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide) will help you to understand and port your current project. Ziggit topic [here](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414)
-- This project may interest you: [Microzig](https://github.com/ZigEmbeddedGroup/microzig) A Unified abstraction layer and HAL for several microcontrollers
+- [Ziggit](https://ziggit.dev/) A community for anyone interested in the Zig Programming Language.
+- [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide) will help you to understand and port your current project.  [Ziggit topic](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414).
+- [Zig Embedded Group](https://github.com/ZigEmbeddedGroup) A group of people dedicated to improve the Zig Embedded Experience
 - [All Your Codebase](https://github.com/allyourcodebase) is an organization that package C/C++ projects for the Zig build system so that you can reliably compile (and cross-compile!) them with ease.
