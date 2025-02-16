@@ -3,6 +3,7 @@ const std = @import("std");
 
 pub fn build(b: *std.Build) void {
     const executable_name = "blinky";
+
     // Target
     const query: std.Target.Query = .{
         .cpu_arch = .thumb,
@@ -16,12 +17,16 @@ pub fn build(b: *std.Build) void {
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const opti = b.standardOptimizeOption(.{});
+    const optimization = b.standardOptimizeOption(.{});
+
+    // When you perform a Debug Release, the optimization level is set to -O0, which significantly increases the binary output size. This makes the Debug Release unsuitable
+    // for devices with limited flash memory. To address this, we will override the optimization level with the -Og flag while leaving the other three optimization modes unchanged.
+    const c_optimization = if (optimization == .Debug) "-Og" else if (optimization == .ReleaseSmall) "-Os" else "-O2";
 
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
-        .optimize = opti,
+        .optimize = optimization,
         .link_libc = false,
         .strip = false,
         .single_threaded = true, // single core cpu
@@ -33,7 +38,13 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
-    //////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    elf.addLibraryPath(.{ .cwd_relative = "libc/lib/" });
+    elf.addSystemIncludePath(.{ .cwd_relative = "libc/include" });
+    elf.linkSystemLibrary("c_pico");
+    elf.linkSystemLibrary("crt0");
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
     const c_sources_drivers = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
@@ -56,7 +67,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    const c_sources_compile_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
     //////////////////////////////////////////////////////////////////
     for (c_includes) |path| {
@@ -88,16 +99,9 @@ pub fn build(b: *std.Build) void {
         elf.addIncludePath(b.path(path));
     }
 
-    //////////////////////////////////////////////////////////////////
-    elf.addLibraryPath(.{ .cwd_relative = "libc/lib/" });
-    elf.addSystemIncludePath(.{ .cwd_relative = "libc/include" });
-    elf.linkSystemLibrary("c_pico");
-    elf.linkSystemLibrary("crt0");
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));
     elf.entry = .{ .symbol_name = "_start" }; // Set Entry Point of the firmware (Already set in the linker script)
-
-    //////////////////////////////////////////////////////////////////
     elf.want_lto = true; // -flto
     elf.link_data_sections = true; // -fdata-sections
     elf.link_function_sections = true; // -ffunction-sections

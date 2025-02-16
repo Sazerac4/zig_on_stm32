@@ -2,8 +2,6 @@ const builtin = @import("builtin");
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-
-    //const version = std.SemanticVersion{ .major = 0, .minor = 1, .patch = 0 };
     const executable_name = "blinky_freertos";
 
     // Target
@@ -19,11 +17,16 @@ pub fn build(b: *std.Build) void {
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const opti = b.standardOptimizeOption(.{});
+    const optimization = b.standardOptimizeOption(.{});
+
+    // When you perform a Debug Release, the optimization level is set to -O0, which significantly increases the binary output size. This makes the Debug Release unsuitable
+    // for devices with limited flash memory. To address this, we will override the optimization level with the -Og flag while leaving the other three optimization modes unchanged.
+    const c_optimization = if (optimization == .Debug) "-Og" else if (optimization == .ReleaseSmall) "-Os" else "-O2";
 
     const exe_mod = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
-        .optimize = opti,
+        .optimize = optimization,
         .link_libc = false,
         .strip = false,
         .single_threaded = true, // single core cpu
@@ -54,13 +57,39 @@ pub fn build(b: *std.Build) void {
         elf.forceUndefinedSymbol("_printf_float"); // GCC equivalent : "-u _printf_float"
     }
 
-    //////////////////////////////////////////////////////////////////
-    // Startup file
-    elf.addAssemblyFile(b.path("startup_stm32l476xx.s"));
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //  Use gcc-arm-none-eabi to figure out where library paths are
+    const gcc_arm_sysroot_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-print-sysroot" }), "\r\n");
+    const gcc_arm_multidir_relative_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-print-multi-directory" }), "\r\n");
+    const gcc_arm_version = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-dumpversion" }), "\r\n");
+    const gcc_arm_lib_path1 = b.fmt("{s}/../lib/gcc/arm-none-eabi/{s}/{s}", .{ gcc_arm_sysroot_path, gcc_arm_version, gcc_arm_multidir_relative_path });
+    const gcc_arm_lib_path2 = b.fmt("{s}/lib/{s}", .{ gcc_arm_sysroot_path, gcc_arm_multidir_relative_path });
 
-    const c_sources_compile_flags = [_][]const u8{ "-Og", "-ggdb3", "-gdwarf-2", "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    // Manually add "nano" variant newlib C standard lib from arm-none-eabi-gcc library folders
+    elf.addLibraryPath(.{ .cwd_relative = gcc_arm_lib_path1 });
+    elf.addLibraryPath(.{ .cwd_relative = gcc_arm_lib_path2 });
+    elf.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) });
+    elf.linkSystemLibrary("c_nano"); // Use "g_nano" (a debugging-enabled libc) ?
+    elf.linkSystemLibrary("m");
 
-    const c_sources_drivers = [_][]const u8{
+    // Manually include C runtime objects bundled with arm-none-eabi-gcc
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crt0.o", .{gcc_arm_lib_path2}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crti.o", .{gcc_arm_lib_path1}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtbegin.o", .{gcc_arm_lib_path1}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtend.o", .{gcc_arm_lib_path1}) });
+    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) });
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const hal_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimization,
+        .link_libc = false,
+        .strip = false,
+        .single_threaded = true, // single core cpu
+    });
+
+    const hal_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include", "Core/Inc" };
+    const hal_sources = [_][]const u8{
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c",
@@ -81,37 +110,32 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    elf.addCSourceFiles(.{
-        .files = &c_sources_drivers,
-        .flags = &c_sources_compile_flags,
-    });
+    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
 
-    //////////////////////////////////////////////////////////////////
-    const c_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include" };
-    for (c_includes) |path| {
-        elf.addIncludePath(b.path(path));
+    for (hal_includes) |path| {
+        hal_mod.addIncludePath(b.path(path));
     }
 
-    //////////////////////////////////////////////////////////////////
-    const c_sources_core = [_][]const u8{ "Core/Src/main.c", "Core/Src/gpio.c", "Core/Src/usart.c", "Core/Src/stm32l4xx_hal_timebase_tim.c", "Core/Src/freertos.c", "Core/Src/stm32l4xx_it.c", "Core/Src/stm32l4xx_hal_msp.c", "Core/Src/system_stm32l4xx.c", "Core/Src/sysmem.c", "Core/Src/syscalls.c", "Core/Src/freertos-openocd.c" };
-    elf.addCSourceFiles(.{
-        .files = &c_sources_core,
-        .flags = &c_sources_compile_flags,
+    hal_mod.addCSourceFiles(.{
+        .files = &hal_sources,
+        .flags = &hal_flags,
     });
 
-    const c_includes_core = [_][]const u8{"Core/Inc"};
-    for (c_includes_core) |path| {
-        elf.addIncludePath(b.path(path));
-    }
+    exe_mod.addImport("HAL library", hal_mod);
 
-    //////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FreeRTOS source code
-    const c_includes_os = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F" };
-    for (c_includes_os) |path| {
-        elf.addIncludePath(b.path(path));
-    }
+    const os_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimization,
+        .link_libc = false,
+        .strip = false,
+        .single_threaded = true, // single core cpu
+    });
 
-    const c_sources_os = [_][]const u8{
+    const os_includes = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F", "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include", "Core/Inc" };
+
+    const os_sources = [_][]const u8{
         "Middlewares/Third_Party/FreeRTOS/Source/croutine.c",
         "Middlewares/Third_Party/FreeRTOS/Source/event_groups.c",
         "Middlewares/Third_Party/FreeRTOS/Source/list.c",
@@ -123,47 +147,55 @@ pub fn build(b: *std.Build) void {
         "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
         "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
     };
-    elf.addCSourceFiles(.{
-        .files = &c_sources_os,
-        .flags = &c_sources_compile_flags,
+    const os_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+
+    for (os_includes) |path| {
+        os_mod.addIncludePath(b.path(path));
+    }
+    os_mod.addCSourceFiles(.{
+        .files = &os_sources,
+        .flags = &os_flags,
     });
 
-    // Used for FreeRTOS when debugging with gdb/openocd
-    elf.forceUndefinedSymbol("uxTopUsedPriority");
+    //Need libc
+    os_mod.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) });
+    os_mod.linkSystemLibrary("c_nano", .{ .needed = true, .weak = false, .preferred_link_mode = .static });
 
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //  Use gcc-arm-none-eabi to figure out where library paths are
-    const gcc_arm_sysroot_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-print-sysroot" }), "\r\n");
-    const gcc_arm_multidir_relative_path = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-print-multi-directory" }), "\r\n");
-    const gcc_arm_version = std.mem.trim(u8, b.run(&.{ arm_gcc_pgm, "-dumpversion" }), "\r\n");
-    const gcc_arm_lib_path1 = b.fmt("{s}/../lib/gcc/arm-none-eabi/{s}/{s}", .{ gcc_arm_sysroot_path, gcc_arm_version, gcc_arm_multidir_relative_path });
-    const gcc_arm_lib_path2 = b.fmt("{s}/lib/{s}", .{ gcc_arm_sysroot_path, gcc_arm_multidir_relative_path });
+    //Add FreeRTOS to the executable
+    exe_mod.addImport("FreeRTOS library", os_mod);
 
-    // Manually add "nano" variant newlib C standard lib from arm-none-eabi-gcc library folders
-    elf.addLibraryPath(.{ .cwd_relative = gcc_arm_lib_path1 });
-    elf.addLibraryPath(.{ .cwd_relative = gcc_arm_lib_path2 });
-    elf.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) });
-    elf.linkSystemLibrary("c_nano"); // Use "g_nano" ?
-    elf.linkSystemLibrary("m");
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Manually include C runtime objects bundled with arm-none-eabi-gcc
-    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crt0.o", .{gcc_arm_lib_path2}) });
-    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crti.o", .{gcc_arm_lib_path1}) });
-    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtbegin.o", .{gcc_arm_lib_path1}) });
-    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtend.o", .{gcc_arm_lib_path1}) });
-    elf.addObjectFile(.{ .cwd_relative = b.fmt("{s}/crtn.o", .{gcc_arm_lib_path1}) });
+    const app_includes = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F", "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include", "Core/Inc" };
+    for (app_includes) |path| {
+        elf.addIncludePath(b.path(path));
+    }
 
-    //////////////////////////////////////////////////////////////////
+    const app_sources = [_][]const u8{ "Core/Src/main.c", "Core/Src/gpio.c", "Core/Src/usart.c", "Core/Src/stm32l4xx_hal_timebase_tim.c", "Core/Src/freertos.c", "Core/Src/stm32l4xx_it.c", "Core/Src/stm32l4xx_hal_msp.c", "Core/Src/system_stm32l4xx.c", "Core/Src/sysmem.c", "Core/Src/syscalls.c", "Core/Src/freertos-openocd.c" };
+    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    elf.addCSourceFiles(.{
+        .files = &app_sources,
+        .flags = &app_flags,
+    });
+
+    const c_includes_core = [_][]const u8{"Core/Inc"};
+    for (c_includes_core) |path| {
+        elf.addIncludePath(b.path(path));
+    }
+
+    elf.addAssemblyFile(b.path("startup_stm32l476xx.s"));
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));
-    // elf.setVerboseCC(true);
-    // elf.setVerboseLink(true); //(NOTE: See https://github.com/ziglang/zig/issues/19410)
-    elf.entry = .{ .symbol_name = "Reset_Handler" }; // Set Entry Point of the firmware (Already set in the linker script)
     elf.want_lto = false; // -flto
     elf.link_data_sections = true; // -fdata-sections
     elf.link_function_sections = true; // -ffunction-sections
     elf.link_gc_sections = true; // -Wl,--gc-sections
 
+    // Used for FreeRTOS when debugging with gdb/openocd
+    elf.forceUndefinedSymbol("uxTopUsedPriority");
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Copy the bin out of the elf
     const bin = b.addObjCopy(elf.getEmittedBin(), .{
         .format = .bin,

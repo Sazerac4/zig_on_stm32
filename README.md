@@ -7,12 +7,12 @@
   - [Installation](#installation)
     - [Linux](#linux)
     - [Windows](#windows)
-    - [Containers (Podman or Docker)](#containers-podman-or-docker)
     - [Vs Code / Vs Codium](#vs-code--vs-codium)
+    - [Containers (Podman or Docker)](#containers-podman-or-docker)
   - [SVD Files](#svd-files)
   - [Build](#build)
   - [For STM32CubeMX generated linker script](#for-stm32cubemx-generated-linker-script)
-  - [References](#references)
+  - [Resources](#resources)
 
 
 ## Description
@@ -33,6 +33,7 @@ This is a work in progress, and help is welcome to add more examples, improve do
 - Using the libc with C code is currently a workaround, and Zig code will ignore it for now. However, this will likely be possible in the near future ([Zig Issue](https://github.com/ziglang/zig/issues/20327)).  
 - JSON Compilation Database, which is used with many C tools (e.g., linters, LSPs, IDE,etc.), will soon be supported. [Zig issue](https://github.com/ziglang/zig/pull/22012).  
 - `@cImport` is planned to work differently in the future. For more details, see this [Zig issue](https://github.com/ziglang/zig/issues/20630).
+- [Translate-C Issue](https://github.com/ziglang/zig/labels/translate-c)
 
 
 ## Examples List
@@ -59,7 +60,7 @@ List of tools that is used around examples
 | :---------------- | --------- | :---------------------------------------------------------------------- |
 | Zig               | `0.14.0`  | For compiling C and Zig code                                            |
 | ZLS               | `0.14.0`  | Language Server Protocol for Zig                                        |
-| Arm GNU Toolchain | `14.2.1`  | Tools fot C developpement and newlib needed by C source code            |
+| Arm GNU Toolchain | `14.2.1`  | Tools for C development (gdb, binutils) and libc                        |
 | LLVM+Clang        | `19.1.7`  | Tools for C development (clang-format, clang-tidy, clangd)              |
 | ST link           | `v1.8.0`  | For flashing firmware                                                   |
 | OpenOCD           | `v0.12.0` | To provide debugging                                                    |
@@ -79,13 +80,13 @@ apt install xz-utils wget stlink-tools openocd clang-tools clang-tidy clang-form
 #Create tools folder
 mkdir -vp /opt/tools
 
-#Install arm-none-eabi-gcc (xpack version)
+#Install Arm GNU Toolchain (xpack version)
 GCC_VERSION="14.2.1-1.1"
 cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v${GCC_VERSION}/xpack-arm-none-eabi-gcc-${GCC_VERSION}-linux-x64.tar.gz \
     && tar -xf /tmp/xpack-arm-none-eabi-gcc-*-linux-x64.tar.gz -C /opt/tools/ \
     && ln -s /opt/tools/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
-#Install zig
+#Install Zig
 ZIG_VERSION="0.14.0-dev.3213+53216d2f2"
 cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/tools/ && \
@@ -102,10 +103,14 @@ cd /tmp && wget https://github.com/zigtools/zls/releases/download/${ZLS_VERSION}
 
 For Windows users,  Information available in this [document](docs/windows.md) to setup your environnement.
 
+### Vs Code / Vs Codium
+
+For Vs Code users, Information available in this [document](docs/vscode.md) for configurations
+
 ### Containers (Podman or Docker)
 
 Instead of installing the various tools in your system, you can use containers to build or flash the firmware.
-Two technologies exist, both CLI APIs are mostly compatible: the well-known Docker and Podman. I use Podman for my examples, but you can simply replace it with Docker if you prefer.
+Two technologies exist, both CLI APIs are mostly compatible: Docker and Podman. I use `podman` for my examples, but you can simply replace it with `docker` if you prefer.
 
 ```bash
 #Create the image
@@ -116,15 +121,11 @@ podman run --rm -it --privileged -v ./projects:/apps --name=zig_and_c zig_and_c:
 cd stm32l476_nucleo/blinky
 # Build the firmware
 zig build
-#Flash the device (Linux only)
+# Flash the device (Linux only)
 zig build flash
 ```
 
 Remove dangling image if needed `podman image prune`
-
-### Vs Code / Vs Codium
-
-For Vs Code users, Information available in this [document](docs/vscode.md) for configurations
 
 ## SVD Files
 
@@ -140,7 +141,7 @@ You can found stm32 SVD files in this [Github repository](https://github.com/mod
 ## Build
 
 All projects use the [Zig Build System](https://ziglang.org/learn/build-system/).  
-Check the `README.md` of an example for additional specific information.
+Check the `README.md` of an project example for additional specific information.
 
 ## For STM32CubeMX generated linker script
 
@@ -161,8 +162,9 @@ Some requirements are needed to make it work with `lld` used by Zig.
   } >RAM
 ```
 
-## References
+## Resources
 
+- [Zig Guide: working with C](https://zig.guide/working-with-c/abi/)
 - [Ziggit](https://ziggit.dev/) A community for anyone interested in the Zig Programming Language.
 - [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide) will help you to understand and port your current project.  [Ziggit topic](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414).
 - [Zig Embedded Group](https://github.com/ZigEmbeddedGroup) A group of people dedicated to improve the Zig Embedded Experience
