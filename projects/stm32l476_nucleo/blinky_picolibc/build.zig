@@ -67,7 +67,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    const c_sources_compile_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
 
     //////////////////////////////////////////////////////////////////
     for (c_includes) |path| {
@@ -98,6 +98,10 @@ pub fn build(b: *std.Build) void {
     for (c_includes_core) |path| {
         elf.addIncludePath(b.path(path));
     }
+
+    //////////////////////////////////////////////////////////////////
+    exe_mod.addCMacro("USE_HAL_DRIVER", "");
+    exe_mod.addCMacro("STM32L476xx", "");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));

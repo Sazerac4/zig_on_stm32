@@ -110,7 +110,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
 
     for (hal_includes) |path| {
         hal_mod.addIncludePath(b.path(path));
@@ -122,6 +122,8 @@ pub fn build(b: *std.Build) void {
     });
 
     exe_mod.addImport("HAL library", hal_mod);
+    hal_mod.addCMacro("USE_HAL_DRIVER", "");
+    hal_mod.addCMacro("STM32L476xx", "");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     const app_sources = [_][]const u8{
@@ -135,19 +137,21 @@ pub fn build(b: *std.Build) void {
         "Core/Src/syscalls.c",
     };
 
-    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
 
-    elf.addCSourceFiles(.{
+    exe_mod.addCSourceFiles(.{
         .files = &app_sources,
         .flags = &app_flags,
     });
 
     const app_includes = [_][]const u8{ "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include", "Core/Inc" };
     for (app_includes) |path| {
-        elf.addIncludePath(b.path(path));
+        exe_mod.addIncludePath(b.path(path));
     }
 
-    elf.addAssemblyFile(b.path("startup_stm32l476xx.s"));
+    exe_mod.addAssemblyFile(b.path("startup_stm32l476xx.s"));
+    exe_mod.addCMacro("USE_HAL_DRIVER", "");
+    exe_mod.addCMacro("STM32L476xx", "");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));

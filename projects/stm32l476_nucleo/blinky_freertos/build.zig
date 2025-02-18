@@ -110,7 +110,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
 
     for (hal_includes) |path| {
         hal_mod.addIncludePath(b.path(path));
@@ -120,6 +120,9 @@ pub fn build(b: *std.Build) void {
         .files = &hal_sources,
         .flags = &hal_flags,
     });
+
+    hal_mod.addCMacro("USE_HAL_DRIVER", "");
+    hal_mod.addCMacro("STM32L476xx", "");
 
     exe_mod.addImport("HAL library", hal_mod);
 
@@ -147,7 +150,7 @@ pub fn build(b: *std.Build) void {
         "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
         "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
     };
-    const os_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
+    const os_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
 
     for (os_includes) |path| {
         os_mod.addIncludePath(b.path(path));
@@ -160,6 +163,8 @@ pub fn build(b: *std.Build) void {
     //Need libc
     os_mod.addSystemIncludePath(.{ .cwd_relative = b.fmt("{s}/include", .{gcc_arm_sysroot_path}) });
     os_mod.linkSystemLibrary("c_nano", .{ .needed = true, .weak = false, .preferred_link_mode = .static });
+    os_mod.addCMacro("USE_HAL_DRIVER", "");
+    os_mod.addCMacro("STM32L476xx", "");
 
     //Add FreeRTOS to the executable
     exe_mod.addImport("FreeRTOS library", os_mod);
@@ -168,22 +173,24 @@ pub fn build(b: *std.Build) void {
 
     const app_includes = [_][]const u8{ "Middlewares/Third_Party/FreeRTOS/Source/include", "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2", "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F", "Drivers/STM32L4xx_HAL_Driver/Inc", "Drivers/STM32L4xx_HAL_Driver/Inc/Legacy", "Drivers/CMSIS/Device/ST/STM32L4xx/Include", "Drivers/CMSIS/Include", "Core/Inc" };
     for (app_includes) |path| {
-        elf.addIncludePath(b.path(path));
+        exe_mod.addIncludePath(b.path(path));
     }
 
     const app_sources = [_][]const u8{ "Core/Src/main.c", "Core/Src/gpio.c", "Core/Src/usart.c", "Core/Src/stm32l4xx_hal_timebase_tim.c", "Core/Src/freertos.c", "Core/Src/stm32l4xx_it.c", "Core/Src/stm32l4xx_hal_msp.c", "Core/Src/system_stm32l4xx.c", "Core/Src/sysmem.c", "Core/Src/syscalls.c", "Core/Src/freertos-openocd.c" };
-    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-DUSE_HAL_DRIVER", "-DSTM32L476xx", "-Wall" };
-    elf.addCSourceFiles(.{
+    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    exe_mod.addCSourceFiles(.{
         .files = &app_sources,
         .flags = &app_flags,
     });
 
     const c_includes_core = [_][]const u8{"Core/Inc"};
     for (c_includes_core) |path| {
-        elf.addIncludePath(b.path(path));
+        exe_mod.addIncludePath(b.path(path));
     }
 
-    elf.addAssemblyFile(b.path("startup_stm32l476xx.s"));
+    exe_mod.addAssemblyFile(b.path("startup_stm32l476xx.s"));
+    exe_mod.addCMacro("USE_HAL_DRIVER", "");
+    exe_mod.addCMacro("STM32L476xx", "");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     elf.setLinkerScript(b.path("stm32l476rgtx_flash.ld"));

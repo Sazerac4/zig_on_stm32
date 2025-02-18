@@ -1,9 +1,4 @@
-# Step by Step installation for windows
-
-## Description
-
-Here an exemple procedure to install evrything needed. It was tested on windows 11.
-
+# Windows requirements 
 
 ## Tools
 
@@ -12,16 +7,12 @@ Here an exemple procedure to install evrything needed. It was tested on windows 
 3. Download [Arm GNU Toolchain](https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/tag/v14.2.1-1.1)
 4. Download [ST link](https://github.com/stlink-org/stlink/releases/tag/v1.8.0)
 5. Download [OpenOCD](https://github.com/xpack-dev-tools/openocd-xpack/releases/tag/v0.12.0-4)
-6. Extract everything to the folder `tools`
-
+6. Extract everything to the folder `tools`. Just extract here, no subfolder creation needed
 
 **ST link**
 
-You will need to copy `C:\tools\stlink-1.8.0-win32\Program Files (x86)\stlink` to `C:\Program Files (x86)\stlink`
-
-**Drivers**
-
-You will need [ST Link](https://www.st.com/en/development-tools/stsw-link009.html) Drivers to communicate with some nucleo board
+ST link got a problem on Windows and search configuration on a wrong location.
+You will need to copy `C:\tools\stlink-1.8.0-win32\Program Files (x86)\stlink` to `C:\Program Files (x86)\stlink`.
 
 **Setup environnement variables**
 
@@ -48,37 +39,47 @@ You need to choice between System wide or User level. Example below work if you 
 ```
 
 
+## Drivers
+
+For STM32 Users. You will need [ST Link](https://www.st.com/en/development-tools/stsw-link009.html) Drivers to communicate with ST-Link devices.
+
 ## Containers (with podman)
 
-You can use Podam on windows. Few steps are required for that
-Main tutoriam [Podman for Windows](https://github.com/containers/podman/blob/main/docs/tutorials/podman-for-windows.md)
+You can use Podman on windows. Check [Podman for Windows](https://github.com/containers/podman/blob/main/docs/tutorials/podman-for-windows.md)
 
+### 1. Enable Hyper-V on Windows 11
 
-**Limitation**
+[Source](https://techcommunity.microsoft.com/blog/educatordeveloperblog/step-by-step-enabling-hyper-v-for-use-on-windows-11/3745905)
 
-No communication with USB devices. So you can't flash with the device
+1. Press the `Windows key + R` to open the Run dialog box.
+2. Type `appwiz.cpl` and press Enter.
+3. In the Programs and Features window, select `Turn Windows features on or off` in the left-hand pane.
+4. In the Windows Features window, scroll down to `Hyper-V` and check the box next to it.
+     
+<img src="images/windows11_hyperv.png" alt="drawing" width="60%"/>
 
-**Instruction**
+5. Click on OK and wait for the installation process to complete.
+6. Once the installation is complete, click on Restart Now to restart your computer.
 
-1. Activate hyperV 
+### 2. Install WSL
 
-
-2. Install WSL
+[Source](https://learn.microsoft.com/fr-fr/windows/wsl/install)
 
 ```powershell
 wsl --install
 ```
 
-3. Start podman machine
+### 3. Install Podman
 
-Download [Podman](https://github.com/containers/podman/releases) and install.
+1. Download [Podman](https://github.com/containers/podman/releases) and install it.
+2. Enable and start the podman machine
 
 ```powershell
 podman machine init
 podman machine start
-````
+```
 
+### Notes
 
-
-
-You can also a GUI [Podman desktop](https://podman-desktop.io/) to visualize your images and containers.
+- You can use [Podman Desktop](https://podman-desktop.io/downloads) to manage image and containers with a GUI.
+- No communication with USB devices. So you can't flash with the device

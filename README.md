@@ -2,7 +2,7 @@
 
 - [Zig Meets C: Cross-Language Development for Embedded Microcontrollers](#zig-meets-c-cross-language-development-for-embedded-microcontrollers)
   - [Description](#description)
-  - [Issue](#issue)
+  - [Embedded Related Point](#embedded-related-point)
   - [Examples List](#examples-list)
   - [Installation](#installation)
     - [Linux](#linux)
@@ -28,18 +28,18 @@ This repository explores the integration of Zig and C for microcontroller develo
 
 This is a work in progress, and help is welcome to add more examples, improve documentation, or provide corrections.
 
-## Issue
+## Embedded Related Point 
 
 - Using the libc with C code is currently a workaround, and Zig code will ignore it for now. However, this will likely be possible in the near future ([Zig Issue](https://github.com/ziglang/zig/issues/20327)).  
 - JSON Compilation Database, which is used with many C tools (e.g., linters, LSPs, IDE,etc.), will soon be supported. [Zig issue](https://github.com/ziglang/zig/pull/22012).  
 - `@cImport` is planned to work differently in the future. For more details, see this [Zig issue](https://github.com/ziglang/zig/issues/20630).
-- [Translate-C Issue](https://github.com/ziglang/zig/labels/translate-c)
-
+- [Translate-C](https://github.com/ziglang/zig/labels/translate-c) command (and `@cImport`) has difficulty translating some C declarations and macros found in Embedded Drivers or CMSIS files.
+- `Debug` Release mode without optimizations can make binary too huge to fit in the device.
 
 ## Examples List
 
 1. Blinky Example 
-2. Blinky Example with custom PicolibC build
+2. Blinky Example with PicolibC build
 3. Blinky Example with FreeRTOS 
 
 **Project tree**
