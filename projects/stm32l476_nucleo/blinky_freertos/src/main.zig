@@ -11,7 +11,7 @@ const os = @cImport({
     @cInclude("task.h");
 });
 
-export fn zig_task(params: ?*anyopaque) callconv(.C) void {
+export fn zig_task(params: ?*anyopaque) callconv(.c) void {
     _ = params;
 
     while (true) {

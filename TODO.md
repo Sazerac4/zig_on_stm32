@@ -9,3 +9,4 @@
 - [ ] Add CI to compile every example.
 - [ ] Add more examples code ()
 - [ ] Add more target (nrf52, raspberry pi pico)
+- [ ] Custom Panic function to implement for runtime error

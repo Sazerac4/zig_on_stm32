@@ -11,7 +11,6 @@
     - [Containers (Podman or Docker)](#containers-podman-or-docker)
   - [SVD Files](#svd-files)
   - [Build](#build)
-  - [For STM32CubeMX generated linker script](#for-stm32cubemx-generated-linker-script)
   - [Resources](#resources)
 
 
@@ -37,6 +36,8 @@ This is a work in progress, and help is welcome to add more examples, improve do
 - `Debug` Release mode without optimizations can make binary too huge to fit in the device.
 
 ## Examples List
+
+The examples are built for a specific target. However, the documentation will try to explain enough about what Zig implies to change in an example so that you can figure out what you need to change when applying it to other targets (with more or less difficulty).
 
 1. Blinky Example 
 2. Blinky Example with PicolibC build
@@ -87,7 +88,7 @@ cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/relea
     && ln -s /opt/tools/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install Zig
-ZIG_VERSION="0.14.0-dev.3213+53216d2f2"
+ZIG_VERSION="0.14.0"
 cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/tools/ && \
     ln -s /opt/tools/zig-linux-x86_64-*/zig ~/.local/bin
@@ -143,29 +144,11 @@ You can found stm32 SVD files in this [Github repository](https://github.com/mod
 All projects use the [Zig Build System](https://ziglang.org/learn/build-system/).  
 Check the `README.md` of an project example for additional specific information.
 
-## For STM32CubeMX generated linker script
-
-Some requirements are needed to make it work with `lld` used by Zig.
-
-1. We need to move the declaration for `_estack` to after the region `RAM` is defined. 
-2. The section `_user_heap_stack` is in RAM (and thus wont' be flashed to the device), so it really should be marked with `(NOLOAD)` like so:
-
-```ld
-  ._user_heap_stack (NOLOAD) :
-  {
-    . = ALIGN(8);
-    PROVIDE ( end = . );
-    PROVIDE ( _end = . );
-    . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
-    . = ALIGN(8);
-  } >RAM
-```
-
 ## Resources
 
-- [Zig Guide: working with C](https://zig.guide/working-with-c/abi/)
+- [Zig Guide: working with C](https://zig.guide/working-with-c/abi/) A Guide to learn the Zig Programming Language
 - [Ziggit](https://ziggit.dev/) A community for anyone interested in the Zig Programming Language.
-- [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide) will help you to understand and port your current project.  [Ziggit topic](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414).
+- [STM32 Guide](https://github.com/haydenridd/stm32-zig-porting-guide) will help you to understand and port your current project with different level of Zig integration.  [Ziggit topic](https://ziggit.dev/t/stm32-porting-guide-first-pass/4414).
 - [Zig Embedded Group](https://github.com/ZigEmbeddedGroup) A group of people dedicated to improve the Zig Embedded Experience
 - [All Your Codebase](https://github.com/allyourcodebase) is an organization that package C/C++ projects for the Zig build system so that you can reliably compile (and cross-compile!) them with ease.
+- [Awesome Zig](https://github.com/zigcc/awesome-zig?tab=readme-ov-file) This repository lists "awesome" projects written in Zig, maintained by ZigCC community.

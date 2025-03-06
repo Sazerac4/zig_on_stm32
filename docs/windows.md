@@ -3,7 +3,7 @@
 ## Tools
 
 1. Create a `tools` folder (example : `C:\tools` )
-2. Download [Zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0-dev.3213+53216d2f2.zip)
+2. Download [Zig](https://ziglang.org/builds/zig-windows-x86_64-0.14.0.zip)
 3. Download [Arm GNU Toolchain](https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/tag/v14.2.1-1.1)
 4. Download [ST link](https://github.com/stlink-org/stlink/releases/tag/v1.8.0)
 5. Download [OpenOCD](https://github.com/xpack-dev-tools/openocd-xpack/releases/tag/v0.12.0-4)
@@ -24,7 +24,7 @@ You need to choice between System wide or User level. Example below work if you 
 ```powershell
 [Environment]::SetEnvironmentVariable(
    "Path",
-   [Environment]::GetEnvironmentVariable("Path", "Machine") + ";C:\tools\stlink-1.8.0-win32\bin;C:\tools\zig-windows-x86_64-0.14.0-dev.3213+53216d2f2;C:\tools\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\tools\xpack-openocd-0.12.0-4\bin",
+   [Environment]::GetEnvironmentVariable("Path", "Machine") + ";C:\tools\stlink-1.8.0-win32\bin;C:\tools\zig-windows-x86_64-0.14.0;C:\tools\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\tools\xpack-openocd-0.12.0-4\bin",
    "Machine"
 )
 ```
@@ -33,7 +33,7 @@ You need to choice between System wide or User level. Example below work if you 
 ```powershell
 [Environment]::SetEnvironmentVariable(
    "Path",
-   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\tools\stlink-1.8.0-win32\bin;C:\tools\zig-windows-x86_64-0.14.0-dev.3213+53216d2f2;C:\tools\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\tools\xpack-openocd-0.12.0-4\bin",
+   [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\tools\stlink-1.8.0-win32\bin;C:\tools\zig-windows-x86_64-0.14.0;C:\tools\xpack-arm-none-eabi-gcc-14.2.1-1.1\bin;C:\tools\xpack-openocd-0.12.0-4\bin",
    "User"
 )
 ```

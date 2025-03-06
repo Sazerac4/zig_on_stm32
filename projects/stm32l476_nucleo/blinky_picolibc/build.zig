@@ -67,7 +67,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const c_sources_compile_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    const c_sources_compile_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall", "-Wextra" };
 
     //////////////////////////////////////////////////////////////////
     for (c_includes) |path| {

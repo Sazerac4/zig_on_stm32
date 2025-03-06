@@ -4,7 +4,7 @@ LABEL description "Build zig examples" \
 
 RUN mkdir -vp /opt/tools && mkdir -vp ~/.local/bin
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt update --fix-missing  && apt upgrade -y
+RUN apt update --fix-missing && apt upgrade -y
 
 #Install tools
 RUN apt install --no-install-recommends -y xz-utils ca-certificates wget make stlink-tools openocd
@@ -16,7 +16,7 @@ RUN cd /tmp && wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/r
     && ln -s /opt/tools/xpack-arm-none-eabi-gcc-*/bin/arm-none-eabi-*  ~/.local/bin
 
 #Install Zig
-ARG ZIG_VERSION="0.14.0-dev.3213+53216d2f2"
+ARG ZIG_VERSION="0.14.0"
 RUN cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz && \
     tar -xf /tmp/zig-linux-x86_64-*.tar.xz -C /opt/tools/ && \
     ln -s /opt/tools/zig-linux-x86_64-*/zig ~/.local/bin
@@ -25,7 +25,7 @@ RUN cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.t
 RUN apt clean && rm -rf -- /var/lib/apt/lists/* && rm -rf -- /tmp/*
 
 #Add Custom bin path
-ENV PATH="~/.local/bin:${PATH}"
+ENV PATH="${PATH}:/root/.local/bin"
 
 WORKDIR /apps
 VOLUME  /apps

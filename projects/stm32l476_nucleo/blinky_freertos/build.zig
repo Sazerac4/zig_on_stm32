@@ -44,12 +44,12 @@ pub fn build(b: *std.Build) void {
     const arm_gcc_pgm = if (b.option([]const u8, "ARM_GCC_PATH", "Path to arm-none-eabi-gcc compiler")) |arm_gcc_path|
         b.findProgram(&.{"arm-none-eabi-gcc"}, &.{arm_gcc_path}) catch {
             std.log.err("Couldn't find arm-none-eabi-gcc at provided path: {s}\n", .{arm_gcc_path});
-            unreachable;
+            return;
         }
     else
         b.findProgram(&.{"arm-none-eabi-gcc"}, &.{}) catch {
             std.log.err("Couldn't find arm-none-eabi-gcc in PATH, try manually providing the path to this executable with -Darmgcc=[path]\n", .{});
-            unreachable;
+            return;
         };
 
     // Allow user to enable float formatting in newlib (printf, sprintf, ...)
@@ -110,7 +110,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall", "-Wextra" };
 
     for (hal_includes) |path| {
         hal_mod.addIncludePath(b.path(path));
@@ -150,7 +150,7 @@ pub fn build(b: *std.Build) void {
         "Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c",
         "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c",
     };
-    const os_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    const os_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall", "-Wextra" };
 
     for (os_includes) |path| {
         os_mod.addIncludePath(b.path(path));
@@ -177,7 +177,7 @@ pub fn build(b: *std.Build) void {
     }
 
     const app_sources = [_][]const u8{ "Core/Src/main.c", "Core/Src/gpio.c", "Core/Src/usart.c", "Core/Src/stm32l4xx_hal_timebase_tim.c", "Core/Src/freertos.c", "Core/Src/stm32l4xx_it.c", "Core/Src/stm32l4xx_hal_msp.c", "Core/Src/system_stm32l4xx.c", "Core/Src/sysmem.c", "Core/Src/syscalls.c", "Core/Src/freertos-openocd.c" };
-    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall", "-Wextra" };
     exe_mod.addCSourceFiles(.{
         .files = &app_sources,
         .flags = &app_flags,

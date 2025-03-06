@@ -2,7 +2,7 @@ const std = @import("std");
 
 // Responsible for exporting vector table symbols
 comptime {
-    @import("vector_table.zig").exportVectorTable();
+    _ = @import("vector_table.zig");
 }
 
 const c = @cImport({

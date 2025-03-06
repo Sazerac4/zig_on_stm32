@@ -44,12 +44,12 @@ pub fn build(b: *std.Build) void {
     const arm_gcc_pgm = if (b.option([]const u8, "ARM_GCC_PATH", "Path to arm-none-eabi-gcc compiler")) |arm_gcc_path|
         b.findProgram(&.{"arm-none-eabi-gcc"}, &.{arm_gcc_path}) catch {
             std.log.err("Couldn't find arm-none-eabi-gcc at provided path: {s}\n", .{arm_gcc_path});
-            unreachable;
+            return;
         }
     else
         b.findProgram(&.{"arm-none-eabi-gcc"}, &.{}) catch {
             std.log.err("Couldn't find arm-none-eabi-gcc in PATH, try manually providing the path to this executable with -Darmgcc=[path]\n", .{});
-            unreachable;
+            return;
         };
 
     // Allow user to enable float formatting in newlib (printf, sprintf, ...)
@@ -110,7 +110,7 @@ pub fn build(b: *std.Build) void {
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c",
         "Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c",
     };
-    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    const hal_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall", "-Wextra" };
 
     for (hal_includes) |path| {
         hal_mod.addIncludePath(b.path(path));
@@ -137,7 +137,7 @@ pub fn build(b: *std.Build) void {
         "Core/Src/syscalls.c",
     };
 
-    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall" };
+    const app_flags = [_][]const u8{ c_optimization, "-std=gnu17", "-Wall", "-Wextra" };
 
     exe_mod.addCSourceFiles(.{
         .files = &app_sources,
