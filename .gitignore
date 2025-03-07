@@ -1,19 +1,19 @@
 ######################################################################
 # User
 ######################################################################
-#Makefile from CubeMX are not used anymore to compile, use cmake instead
+#Makefile from CubeMX are not used anymore to compile, use Zig instead
 Makefile
 *.mk
 
-# folder that the user doesn't want to track content
+# Folder that the user doesn't want to track content
 **/tmp/
-# clangd cache
+# Clangd cache
 **/.cache/ 
 
-# stm32 tools
+# STM32 tools
 .mxproject
 
-# vscode
+# VS code
 **/.vscode/settings.json
 **/.vscode/.cortex-debug.*.json
 *.code-workspace
@@ -55,7 +55,6 @@ CMakeUserPresets.json
 
 
 **/.zig-cache/ 
-**/zig-cache/ 
 **/zig-out/
 **/release/
 **/debug/

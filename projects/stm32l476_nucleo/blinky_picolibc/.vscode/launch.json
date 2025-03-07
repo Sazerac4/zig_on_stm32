@@ -1,0 +1,54 @@
+{
+    "configurations": [
+        {
+            "name": "Attach",
+            "showDevDebugOutput": "parsed",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/zig-out/bin/blinky.elf",
+            "request": "attach",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "runToEntryPoint": "_init",
+            "gdbPath": "arm-none-eabi-gdb",
+            "device": "STM32L476RG",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32l4x.cfg",
+            ],
+            "liveWatch": {
+                "enabled": false,
+                "samplesPerSecond": 2
+            },
+            "debuggerArgs": [
+                "-x",
+                "${workspaceFolder}/.gdbinit"
+            ],
+            "svdFile": "${workspaceFolder}/STM32L476.svd"
+        },
+        {
+            "name": "Launch",
+            "showDevDebugOutput": "parsed",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/zig-out/bin/blinky.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "_init",
+            "servertype": "openocd",
+            "gdbPath": "arm-none-eabi-gdb",
+            "device": "STM32L476RG",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32l4x.cfg",
+            ],
+            "liveWatch": {
+                "enabled": false,
+                "samplesPerSecond": 2
+            },
+            "debuggerArgs": [
+                "-x",
+                "${workspaceFolder}/.gdbinit"
+            ],
+            "svdFile": "${workspaceFolder}/STM32L476.svd"
+        }
+    ]
+}
