@@ -23,7 +23,7 @@
 - Your future project rely heavily on C-based components, such as operating systems (e.g., FreeRTOS), filesystems (e.g., LittleFS), libraries, drivers, etc. You don’t want to rewrite initialization or configuration routines that already work well and are widely used elsewhere.
 - You work with coworkers who will maintain, update, and/or test parts of the project's C code. They may not use Zig—either not yet or never.
 
-This repository explores the integration of Zig and C for microcontroller development, covering both baremetal and OS-based environments. It provides practical examples, tutorials, and tools to help developers combine the power of Zig's modern features with the established ecosystem of C.
+This repository explores the integration of Zig into microcontroller development projects that are already written in C, covering both bare-metal and OS-based environments. It provides practical examples, tutorials, and tools to help developers combine the power of Zig's modern features with the established C ecosystem.
 
 This is a work in progress, and help is welcome to add more examples, improve documentation, or provide corrections.
 
@@ -95,9 +95,9 @@ cd /tmp && wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.x
 
 #Install ZLS
 ZLS_VERSION="0.14.0"
-cd /tmp && wget https://github.com/zigtools/zls/releases/download/${ZLS_VERSION}/zls-x86-linux.tar.xz && \
-    tar -xf /tmp/zls-x86-linux.tar.xz -C /opt/tools/ && \
-    ln -s /opt/tools/zls-x86_64-linux/zls ~/.local/bin
+cd /tmp && wget https://github.com/zigtools/zls/releases/download/${ZLS_VERSION}/zls-linux-x86_64-${ZLS_VERSION}.tar.xz && \
+    mkdir -p /opt/tools/zls-linux-x86_64-${ZLS_VERSION} && tar -xf /tmp/zls-linux-x86_64-${ZLS_VERSION}.tar.xz -C /opt/tools/zls-linux-x86_64-${ZLS_VERSION} && \
+    ln -s /opt/tools/zls-linux-x86_64-${ZLS_VERSION}/zls ~/.local/bin
 ```
 
 ### Windows
